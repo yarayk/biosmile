@@ -5,15 +5,17 @@ import 'pages/terms_of_service_page.dart';
 import 'pages/privacy_policy_page.dart';
 import 'pages/photo_page.dart';
 import 'pages/exercise_camera_page.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config.dart';
 
 void main() async {
   // подключение базы данных
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: 'https://wlinnnojuqxbpoeizyvz.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsaW5ubm9qdXF4YnBvZWl6eXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyMjE5MTQsImV4cCI6MjA1Nzc5NzkxNH0.-rw_YKxF-IWKWyADQaRdrBZqbxa4REO6TrAiBFmAd50',
+    url: URL_KEY,
+    anonKey: ANON_KEY,
   );
 
   runApp(const MyApp());
