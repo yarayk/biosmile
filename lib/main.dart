@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
-import 'auth_signin_widget.dart';
-import 'auth_signup_widget.dart';
-import 'terms_of_service_page.dart';
-import 'privacy_policy_page.dart';
-import 'photo_page.dart';
-import 'exercise_camera_page.dart';
+import 'pages/auth_signin_widget.dart';
+import 'pages/auth_signup_widget.dart';
+import 'pages/terms_of_service_page.dart';
+import 'pages/privacy_policy_page.dart';
+import 'pages/photo_page.dart';
+import 'pages/exercise_camera_page.dart';
 
-void main() {
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config.dart';
+
+void main() async {
+  // подключение базы данных
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: URL_KEY,
+    anonKey: ANON_KEY,
+  );
+
   runApp(const MyApp());
 }
 
