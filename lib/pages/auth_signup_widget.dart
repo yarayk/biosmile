@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'terms_of_service_page.dart';
 import 'privacy_policy_page.dart';
 
@@ -8,8 +9,21 @@ class AuthSignUpWidget extends StatefulWidget {
   _AuthSignUpWidgetState createState() => _AuthSignUpWidgetState();
 }
 
+//Контроллеры
 class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
-  bool _isChecked = false; // Состояние чекбокса
+  final _lastNameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _middleNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _isChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserSession();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +42,9 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
               ),
             ),
             SizedBox(height: 16),
+            // Фамилия
             TextField(
+              controller: _lastNameController,
               decoration: InputDecoration(
                 labelText: 'Фамилия *',
                 border: OutlineInputBorder(
@@ -37,7 +53,9 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
               ),
             ),
             SizedBox(height: 12),
+            // Имя
             TextField(
+              controller: _firstNameController,
               decoration: InputDecoration(
                 labelText: 'Имя *',
                 border: OutlineInputBorder(
@@ -46,7 +64,9 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
               ),
             ),
             SizedBox(height: 12),
+            // Отчество
             TextField(
+              controller: _middleNameController,
               decoration: InputDecoration(
                 labelText: 'Отчество',
                 border: OutlineInputBorder(
@@ -55,7 +75,9 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
               ),
             ),
             SizedBox(height: 12),
+            // Электронная почта
             TextField(
+              controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'Электронная почта *',
                 border: OutlineInputBorder(
@@ -64,8 +86,10 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
               ),
             ),
             SizedBox(height: 12),
+            // Пароль
             TextField(
               obscureText: true,
+              controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Пароль *',
                 border: OutlineInputBorder(
@@ -75,13 +99,14 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
               ),
             ),
             SizedBox(height: 24),
+            // Чекбокс с условиями
             Row(
               children: [
                 Checkbox(
-                  value: _isChecked, // Текущее состояние чекбокса
+                  value: _isChecked,
                   onChanged: (bool? value) {
                     setState(() {
-                      _isChecked = value ?? false; // Обновляем состояние
+                      _isChecked = value ?? false;
                     });
                   },
                 ),
@@ -131,8 +156,9 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
               ],
             ),
             SizedBox(height: 24),
+            // Кнопка регистрации
             ElevatedButton(
-              onPressed: () {},
+              onPressed: _signUp,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 minimumSize: Size(double.infinity, 50),
@@ -149,7 +175,7 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
             Text('ИЛИ', style: TextStyle(color: Colors.black54)),
             SizedBox(height: 16),
             OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: _signInWithGoogle,
               style: OutlinedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
@@ -187,5 +213,81 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
         ),
       ),
     );
+  }
+
+  // Функция регистрации
+  Future<void> _signUp() async {
+    final lastName = _lastNameController.text.trim();
+    final firstName = _firstNameController.text.trim();
+    final middleName = _middleNameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (lastName.isEmpty || firstName.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Пожалуйста, заполните все обязательные поля')),
+      );
+      return;
+    }
+
+    try {
+      final response = await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      if (response.user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Регистрация прошла успешно!')),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Произошла ошибка при регистрации')),
+        );
+      }
+    } catch (e) {
+      print('Error during sign up: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Произошла ошибка при регистрации')),
+      );
+    }
+  }
+
+  // Функция входа через Google
+  Future<void> _signInWithGoogle() async {
+    try {
+      // Вход через Google
+      final response = await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google, // Используем OAuthProvider.google
+      );
+
+      // Проверка успешного ответа
+      if (response == true) {
+        // Если возвращается true, то авторизация успешна
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Успешный вход через Google')),
+        );
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        // Если возвращается false или ошибка
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка входа: Неизвестная ошибка')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка входа: $e')),
+      );
+    }
+  }
+  // Проверка, авторизован ли пользователь
+  void _checkUserSession() {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    }
   }
 }
