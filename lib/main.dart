@@ -38,6 +38,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 
+
+// контрольная точка 1
 void main() async{
   // подключение базы данных
   WidgetsFlutterBinding.ensureInitialized();
