@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'terms_of_service_page.dart';
 import 'privacy_policy_page.dart';
+import '../auth_service.dart';
 
 class AuthSignUpWidget extends StatefulWidget {
   @override
@@ -260,8 +261,16 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
                   return;
                 }
 
-                // Если все проверки пройдены
-                Navigator.pushNamed(context, '/email-verification');
+                // Если все проверки пройдены, вызов сервиса регистрации
+                AuthService.signUp(
+                  context: context,
+                  email: email,
+                  password: password,
+                  firstName: firstName,
+                  lastName: lastName,
+                  middleName: middleName,
+                );
+
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
@@ -279,7 +288,9 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
             Text('ИЛИ', style: TextStyle(color: Colors.black54)),
             SizedBox(height: 16),
             OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                AuthService.signInWithGoogle(context);
+              },
               style: OutlinedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
