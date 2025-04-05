@@ -8,6 +8,7 @@ import 'pages/exercise_camera_page.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
+import 'inserts.dart';
 
 void main() async {
   // подключение базы данных
@@ -17,6 +18,8 @@ void main() async {
     url: URL_KEY,
     anonKey: ANON_KEY,
   );
+
+  await insertUser('Yaroslav', 'YA.COM');
 
   runApp(const MyApp());
 }
