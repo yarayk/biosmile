@@ -1,11 +1,4 @@
 import 'package:flutter/material.dart';
-import 'pages/auth_signin_widget.dart';
-import 'pages/auth_signup_widget.dart';
-import 'pages/terms_of_service_page.dart';
-import 'pages/privacy_policy_page.dart';
-import 'pages/photo_page.dart';
-import 'pages/exercise_camera_page.dart';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'inserts.dart';
