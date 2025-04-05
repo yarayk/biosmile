@@ -1,8 +1,35 @@
 import 'package:flutter/material.dart';
+import 'forgot_password_page.dart';
+import 'home_page.dart';
 import 'auth_signup_widget.dart';
-import 'photo_page.dart';
 
-class AuthSignInWidget extends StatelessWidget {
+class AuthSignInWidget extends StatefulWidget {
+  @override
+  _AuthSignInWidgetState createState() => _AuthSignInWidgetState();
+}
+
+class _AuthSignInWidgetState extends State<AuthSignInWidget> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailRegex.hasMatch(email);
+  }
+
+  bool _isValidPassword(String password) {
+    if (password.length < 8) return false;
+    final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[._-])[A-Za-z\d._-]{8,}$');
+    return passwordRegex.hasMatch(password);
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,31 +48,68 @@ class AuthSignInWidget extends StatelessWidget {
             ),
             SizedBox(height: 24),
             TextField(
+              controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'Электронная почта',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 16),
             TextField(
-              obscureText: true,
+              controller: _passwordController,
+              obscureText: _obscurePassword,
               decoration: InputDecoration(
                 labelText: 'Пароль',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                suffixIcon: Icon(Icons.visibility_off),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
               ),
             ),
             SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ExercisesPage()),
-                );
+                final email = _emailController.text.trim();
+                final password = _passwordController.text;
+
+                // Проверка email
+                if (email.isEmpty) {
+                  _showError('Пожалуйста, введите email');
+                  return;
+                }
+                if (!_isValidEmail(email)) {
+                  _showError('Пожалуйста, введите корректный email');
+                  return;
+                }
+
+                // Проверка пароля
+                if (password.isEmpty) {
+                  _showError('Пожалуйста, введите пароль');
+                  return;
+                }
+                if (!_isValidPassword(password)) {
+                  _showError('Неверный формат пароля. Требуется:\n'
+                      '- минимум 8 символов\n'
+                      '- 1 заглавная буква\n'
+                      '- 1 цифра\n'
+                      '- 1 спецсимвол (._-)');
+                  return;
+                }
+
+                // Если все проверки пройдены
+                Navigator.pushNamed(context, '/home');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
@@ -70,7 +134,7 @@ class AuthSignInWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              icon: Image.asset('assets/google_logo.png', height: 24),
+              icon: Image.asset('assets/image/google_logo.png', height: 24),
               label: Text(
                 'ВОЙТИ С GOOGLE',
                 style: TextStyle(fontSize: 16, color: Colors.black87),
@@ -79,10 +143,7 @@ class AuthSignInWidget extends StatelessWidget {
             SizedBox(height: 24),
             GestureDetector(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AuthSignUpWidget()),
-                );
+                Navigator.pushNamed(context, '/signup');
               },
               child: Text.rich(
                 TextSpan(
@@ -100,11 +161,19 @@ class AuthSignInWidget extends StatelessWidget {
                 ),
               ),
             ),
+            SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/forgot-password');
+              },
+              child: Text(
+                'Забыли пароль?',
+                style: TextStyle(color: Colors.orange),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-
