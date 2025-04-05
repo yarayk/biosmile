@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:untitled2/exercise_sections/additional_exercises.dart';
 import 'pages/auth_signin_widget.dart';
 import 'pages/auth_signup_widget.dart';
@@ -35,7 +34,19 @@ import 'exercise_sections/additional_exercises/additional_1.dart';
 import 'exercise_sections/additional_exercises/additional_2.dart';
 import 'exercise_sections/additional_exercises/additional_3.dart';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config.dart';
+
+void main() async{
+  // подключение базы данных
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: URL_KEY,
+    anonKey: ANON_KEY,
+  );
+
   runApp(const MyApp());
 }
 
