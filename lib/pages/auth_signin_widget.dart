@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'forgot_password_page.dart';
 import 'home_page.dart';
 import 'auth_signup_widget.dart';
+import '../auth_service.dart';
 
 class AuthSignInWidget extends StatefulWidget {
   @override
@@ -99,17 +100,13 @@ class _AuthSignInWidgetState extends State<AuthSignInWidget> {
                   _showError('Пожалуйста, введите пароль');
                   return;
                 }
-                if (!_isValidPassword(password)) {
-                  _showError('Неверный формат пароля. Требуется:\n'
-                      '- минимум 8 символов\n'
-                      '- 1 заглавная буква\n'
-                      '- 1 цифра\n'
-                      '- 1 спецсимвол (._-)');
-                  return;
-                }
 
-                // Если все проверки пройдены
-                Navigator.pushNamed(context, '/home');
+                 // ВЫЗОВ АВТОРИЗАЦИИ из auth_service.dart
+                AuthService.signInWithEmail(
+                  context: context,
+                  email: email,
+                  password: password,
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
@@ -127,7 +124,9 @@ class _AuthSignInWidgetState extends State<AuthSignInWidget> {
             Text('или', style: TextStyle(color: Colors.black54)),
             SizedBox(height: 16),
             OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                AuthService.signInWithGoogle(context);
+              },
               style: OutlinedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
