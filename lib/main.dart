@@ -37,6 +37,7 @@ import 'exercise_sections/additional_exercises/additional_3.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
+//final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async{
   // подключение базы данных
@@ -47,6 +48,16 @@ void main() async{
     anonKey: ANON_KEY,
   );
 
+  // Добавляем подписку на вход пользователя (в том числе через Google)
+  /*Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    final AuthChangeEvent event = data.event;
+    final session = data.session;
+
+    if (event == AuthChangeEvent.signedIn && session != null) {
+      navigatorKey.currentState?.pushReplacementNamed('/home');
+    }
+  });
+*/
   runApp(const MyApp());
 }
 
@@ -56,6 +67,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      //navigatorKey: navigatorKey,
       title: 'My App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
