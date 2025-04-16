@@ -22,56 +22,67 @@ class AuthService {
       );
 
       if (response.user != null) {
-        // Успешная регистрация
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Регистрация прошла успешно!')),
+          const SnackBar(content: Text('Регистрация прошла успешно!')),
         );
-        Navigator.pop(context);
+        Navigator.pop(context); // возвращаемся на экран входа
       } else {
-        //Если ответ от сервера не был успешным
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
+          const SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
+        );
+      }
+    } on AuthException catch (e) {
+      if (e.message.contains('already registered') || e.message.contains('User already registered')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Аккаунт с таким email уже зарегистрирован')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка регистрации: ${e.message}')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка регистрации: ${e.toString()}')),
+        SnackBar(content: Text('Неизвестная ошибка: ${e.toString()}')),
       );
     }
   }
 
- /// Вход по email и паролю
- static Future<void> signInWithEmail({
-  required BuildContext context,
-  required String email,
-  required String password,
-}) async {
-  try {
-    final response = await Supabase.instance.client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+  /// Вход по email и паролю
+  static Future<void> signInWithEmail({
+    required BuildContext context,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
 
-    if (response.user != null) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      _showMessage(context, 'Не удалось войти. Попробуйте ещё раз.');
-    }
-  } catch (e) {
-    if (e is AuthException) {
-      _showMessage(context, 'Ошибка: ${e.message}');
-    } else {
+      if (response.user != null) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        _showMessage(context, 'Не удалось войти. Попробуйте ещё раз.');
+      }
+    } on AuthException catch (e) {
+      if (e.message.contains('Invalid login credentials') ||
+          e.message.contains('Invalid email or password')) {
+        _showMessage(context, 'Неверный email или пароль');
+      } else {
+        _showMessage(context, 'Ошибка входа: ${e.message}');
+      }
+    } catch (e) {
       _showMessage(context, 'Неизвестная ошибка: ${e.toString()}');
     }
   }
-}
 
   /// Вход через Google с помощью Supabase OAuth
   static Future<void> signInWithGoogle(BuildContext context) async {
     try {
       final redirectUrl = kIsWeb
-    ? 'http://localhost:3000'
-    : 'com.mycompany.biosmile://callback';
+          ? 'http://localhost:3000'
+          : 'com.mycompany.biosmile://callback';
 
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
@@ -85,15 +96,15 @@ class AuthService {
   }
 
 //Возвращает правильный URL в зависимости от платформы
-static String getRedirectUrl() {
-  if (kIsWeb) {
-    return 'http://localhost:3000';  // веб-редирект
+  static String getRedirectUrl() {
+    if (kIsWeb) {
+      return 'http://localhost:3000';  // веб-редирект
+    }
+    if (Platform.isAndroid || Platform.isIOS) {
+      return 'com.mycompany.biosmile://callback';  // мобильный редирект
+    }
+    return 'http://localhost:3000';  // fallback для других случаев
   }
-  if (Platform.isAndroid || Platform.isIOS) {
-    return 'com.mycompany.biosmile://callback';  // мобильный редирект
-  }
-  return 'http://localhost:3000';  // fallback для других случаев
-}
 
   /// Проверка активной сессии пользователя и редирект на /home
   static void checkUserSession(BuildContext context) {
@@ -105,7 +116,7 @@ static String getRedirectUrl() {
     }
   }
 
-/// Показывает Snackbar
+  /// Показывает Snackbar
   static void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
