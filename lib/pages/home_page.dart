@@ -62,6 +62,10 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/exercise_sections');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/home');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/profile');
           }
         },
       ),

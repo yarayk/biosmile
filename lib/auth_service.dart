@@ -22,60 +22,49 @@ class AuthService {
       );
 
       if (response.user != null) {
+        // Успешная регистрация
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Регистрация прошла успешно!')),
+          SnackBar(content: Text('Регистрация прошла успешно!')),
         );
-        Navigator.pop(context); // возвращаемся на экран входа
+        Navigator.pop(context);
       } else {
+        //Если ответ от сервера не был успешным
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
-        );
-      }
-    } on AuthException catch (e) {
-      if (e.message.contains('already registered') || e.message.contains('User already registered')) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Аккаунт с таким email уже зарегистрирован')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка регистрации: ${e.message}')),
+          SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Неизвестная ошибка: ${e.toString()}')),
+        SnackBar(content: Text('Ошибка регистрации: ${e.toString()}')),
       );
     }
   }
 
  /// Вход по email и паролю
  static Future<void> signInWithEmail({
-   required BuildContext context,
-   required String email,
-   required String password,
- }) async {
-   try {
-     final response = await Supabase.instance.client.auth.signInWithPassword(
-       email: email,
-       password: password,
-     );
+  required BuildContext context,
+  required String email,
+  required String password,
+}) async {
+  try {
+    final response = await Supabase.instance.client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
 
-     if (response.user != null) {
-       Navigator.pushReplacementNamed(context, '/home');
-     } else {
-       _showMessage(context, 'Не удалось войти. Попробуйте ещё раз.');
-     }
-   } on AuthException catch (e) {
-     if (e.message.contains('Invalid login credentials') ||
-         e.message.contains('Invalid email or password')) {
-       _showMessage(context, 'Неверный email или пароль');
-     } else {
-       _showMessage(context, 'Ошибка входа: ${e.message}');
-     }
-   } catch (e) {
-     _showMessage(context, 'Неизвестная ошибка: ${e.toString()}');
-   }
- }
+    if (response.user != null) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      _showMessage(context, 'Не удалось войти. Попробуйте ещё раз.');
+    }
+  } catch (e) {
+    if (e is AuthException) {
+      _showMessage(context, 'Ошибка: ${e.message}');
+    } else {
+      _showMessage(context, 'Неизвестная ошибка: ${e.toString()}');
+    }
+  }
+}
 
   /// Вход через Google с помощью Supabase OAuth
   static Future<void> signInWithGoogle(BuildContext context) async {
