@@ -19,12 +19,6 @@ class _AuthSignInWidgetState extends State<AuthSignInWidget> {
     return emailRegex.hasMatch(email);
   }
 
-  bool _isValidPassword(String password) {
-    if (password.length < 8) return false;
-    final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*\d)(?=.*[._-])[A-Za-z\d._-]{8,}$');
-    return passwordRegex.hasMatch(password);
-  }
-
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -107,6 +101,8 @@ class _AuthSignInWidgetState extends State<AuthSignInWidget> {
                   email: email,
                   password: password,
                 );
+                // Если все проверки пройдены
+                Navigator.pushNamed(context, '/home');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
