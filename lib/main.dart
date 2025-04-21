@@ -9,6 +9,9 @@ import 'pages/verification_code_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/home_page.dart';
 import 'pages/exercise_sections.dart';
+import 'pages/photo_diary_page.dart';
+import 'pages/profile_page.dart';
+import 'pages/settings_page.dart';
 import 'exercise_sections/tongue_exercises.dart';
 import 'exercise_sections/lips_exercises.dart';
 import 'exercise_sections/lips_exercises/lips_1.dart';
@@ -37,6 +40,7 @@ import 'exercise_sections/additional_exercises/additional_3.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
+import 'package:intl/date_symbol_data_local.dart'; // Для локализации календаря
 
 
 // контрольная точка 1
@@ -48,7 +52,7 @@ void main() async{
     url: URL_KEY,
     anonKey: ANON_KEY,
   );
-
+  await initializeDateFormatting('ru_RU', null); // Инициализация локализации для календаря
   runApp(const MyApp());
 }
 
@@ -76,6 +80,9 @@ class MyApp extends StatelessWidget {
         '/reset-password': (context) => ResetPasswordPage(),
         '/home': (context) => HomePage(),
         '/exercise_sections': (context) => ExerciseSectionsPage(),
+        '/profile': (context) => ProfilePage(),
+        '/photo_diary': (context) => PhotoDiaryPage(),
+        '/settings': (context) => SettingsPage(),
         '/tongue_1': (context) => Tongue1(),
         '/tongue_2': (context) => Tongue2(),
         '/tongue_3': (context) => Tongue3(),

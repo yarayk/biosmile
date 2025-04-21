@@ -30,7 +30,7 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0, // Текущая вкладка "Упражнения"
+        currentIndex: 1,
         items: [
           BottomNavigationBarItem(
             icon: Image.asset('assets/image/work.png', width: 40, height: 40),
@@ -46,15 +46,36 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
           ),
         ],
         onTap: (index) {
-          if (index == 1) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/exercise_sections');
+          } else if (index == 1) {
             Navigator.pushReplacementNamed(context, '/home');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/profile');
           }
         },
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            const SizedBox(height: 40),
+
+            // Прогресс-бар
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: 0.56,
+                  minHeight: 12,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
+
+            // Секция упражнений
             ...exerciseSections.map((section) {
               return GestureDetector(
                 onTap: () async {
