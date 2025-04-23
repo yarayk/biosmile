@@ -1,123 +1,96 @@
 import 'package:flutter/material.dart';
 
-class ResetPasswordPage extends StatefulWidget {
-  @override
-  _ResetPasswordPageState createState() => _ResetPasswordPageState();
-}
-
-class _ResetPasswordPageState extends State<ResetPasswordPage> {
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmPasswordController = TextEditingController();
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
-
-  // Проверка пароля: минимум 8 символов, одна заглавная, одна цифра, один спецсимвол (._-)
-  bool _isPasswordValid(String password) {
-    return password.length >= 8 &&
-        password.contains(RegExp(r'[A-Z]')) && // Заглавная буква
-        password.contains(RegExp(r'[0-9]')) && // Цифра
-        password.contains(RegExp(r'[._-]')); // Разрешенные спецсимволы
-  }
+class ResetPasswordPage extends StatelessWidget {
+  const ResetPasswordPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Смена пароля')),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Введите новый пароль', style: TextStyle(fontSize: 22)),
-            SizedBox(height: 24),
-            TextField(
-              controller: passwordController,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                labelText: 'Новый пароль',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              controller: confirmPasswordController,
-              obscureText: _obscureConfirmPassword,
-              decoration: InputDecoration(
-                labelText: 'Подтвердите новый пароль',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureConfirmPassword = !_obscureConfirmPassword;
-                    });
-                  },
-                ),
-              ),
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                String password = passwordController.text;
-                String confirmPassword = confirmPasswordController.text;
-
-                // Проверка длины пароля
-                if (password.length < 8) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Пароль должен содержать минимум 8 символов')),
-                  );
-                  return;
-                }
-
-                // Проверка на соответствие требованиям
-                if (!_isPasswordValid(password)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Пароль должен содержать:\n'
-                            '- 1 заглавную букву\n'
-                            '- 1 цифру\n'
-                            '- 1 специальный символ ( . _ - )',
+            // Назад и заголовок
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black12),
+                        shape: BoxShape.circle,
                       ),
-                      duration: Duration(seconds: 3),
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(Icons.arrow_back, color: Color(0xFF3C3C50)),
                     ),
-                  );
-                  return;
-                }
+                  ),
+                  const SizedBox(width: 16),
+                  const Text(
+                    'Смена пароля',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF3C3C50),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-                // Проверка совпадения паролей
-                if (password != confirmPassword) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Пароли не совпадают')),
-                  );
-                  return;
-                }
+            const SizedBox(height: 32),
 
-                // Если все проверки пройдены
-                Navigator.pushNamed(context, '/');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            // Картинка
+            Image.asset(
+              'assets/image/resetpassword.png',
+              width: 180,
+              height: 180,
+            ),
+
+            const SizedBox(height: 32),
+
+            // Текст
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Письмо с инструкциями отправлено на ваш email, проверьте почту',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF3C3C50),
                 ),
               ),
-              child: Text(
-                'ПОДТВЕРДИТЬ',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+
+            const SizedBox(height: 40),
+
+            // Кнопка
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFF79E1B), // Ярко-оранжевая кнопка
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/');
+                  },
+                  child: const Text(
+                    'СТРАНИЦА АВТОРИЗАЦИИ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

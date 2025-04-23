@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'forgot_password_page.dart';
-import 'home_page.dart';
-import 'auth_signup_widget.dart';
 import '../auth_service.dart';
 
 class AuthSignInWidget extends StatefulWidget {
@@ -101,8 +98,6 @@ class _AuthSignInWidgetState extends State<AuthSignInWidget> {
                   email: email,
                   password: password,
                 );
-                // Если все проверки пройдены
-                Navigator.pushNamed(context, '/home');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,

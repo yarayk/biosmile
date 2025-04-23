@@ -12,9 +12,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _firstNameController = TextEditingController(text: 'Аня');
   final _middleNameController = TextEditingController(text: 'Отчество');
   final _emailController = TextEditingController(text: 'kalinina.anya@jimin.bts');
-  final _passwordController = TextEditingController(text: 'кулибяка007');
 
-  bool _obscurePassword = true;
   bool _hasChanged = false;
   String? _selectedAvatar;
   String _userId = '123456789';
@@ -174,15 +172,6 @@ class _SettingsPageState extends State<SettingsPage> {
               SizedBox(height: 12),
               _styledTextField('Электронная почта', _emailController),
               SizedBox(height: 12),
-              _styledTextField(
-                'Пароль',
-                _passwordController,
-                obscure: _obscurePassword,
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.remove_red_eye_outlined, color: Colors.orange),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                ),
-              ),
               SizedBox(height: 16),
               Text('ID Пользователя: $_userId', style: TextStyle(color: Colors.grey)),
               Align(
