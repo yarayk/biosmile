@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../profile_service.dart';
+
+final _profileService = ProfileService();
 
 class SettingsPage extends StatefulWidget {
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
-
 class _SettingsPageState extends State<SettingsPage> {
   final _formKey = GlobalKey<FormState>();
-  final _lastNameController = TextEditingController(text: 'Калинина');
-  final _firstNameController = TextEditingController(text: 'Аня');
-  final _middleNameController = TextEditingController(text: 'Отчество');
-  final _emailController = TextEditingController(text: 'kalinina.anya@jimin.bts');
+  final _lastNameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _middleNameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   bool _hasChanged = false;
   String? _selectedAvatar;
@@ -40,19 +42,30 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedAvatar = prefs.getString('selectedAvatar');
-    setState(() {
-      _selectedAvatar = savedAvatar ?? _avatarPaths[0]; // Если не сохранено, устанавливаем аватар по умолчанию
-      _isLoading = false; // Завершаем загрузку
-    });
+    final profile = await _profileService.loadProfileWithAvatar();
+    if (profile != null) {
+      _lastNameController.text = profile.lastName;
+      _firstNameController.text = profile.firstName;
+      _middleNameController.text = profile.middleName;
+      _emailController.text = profile.email;
+      _userId = profile.id;
+      _selectedAvatar = profile.avatarUrl;
+    }
+
+    setState(() => _isLoading = false);
   }
 
   Future<void> _saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (_selectedAvatar != null) {
-      await prefs.setString('selectedAvatar', _selectedAvatar!);
-    }
+    final data = UserProfileData(
+      lastName: _lastNameController.text.trim(),
+      firstName: _firstNameController.text.trim(),
+      middleName: _middleNameController.text.trim(),
+      email: _emailController.text.trim(),
+      id: _userId,
+      avatarUrl: _selectedAvatar!,
+    );
+
+    await _profileService.saveProfileData(data);
   }
 
   void _showAvatarSelectionDialog() {

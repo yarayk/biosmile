@@ -42,6 +42,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Для локализации календаря
 
+
+// контрольная точка 1
 void main() async{
   // подключение базы данных
   WidgetsFlutterBinding.ensureInitialized();

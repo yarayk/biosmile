@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import '../profile_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,21 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  String userName = '...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  //Функция для подгрузки имени пользователя
+  Future<void> _loadUserName() async {
+    String? name = await ProfileService().getFirstName();
+    setState(() {
+      userName = name ?? 'Гость';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +117,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Text(
-                                'Аня',
+                                userName,
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
