@@ -13,13 +13,16 @@ class AuthService {
     required String password,
     required String firstName,
     required String lastName,
-    String? middleName,
+    required String middleName,
   }) async {
     try {
       final response = await Supabase.instance.client.auth.signUp(
-        email: email,
-        password: password,
-      );
+          email: email,
+          password: password,
+          data: {
+      'full_name': (lastName + " " + firstName + " " + middleName)
+      },
+    );
 
       if (response.user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
