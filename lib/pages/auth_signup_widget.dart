@@ -198,7 +198,7 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
             ),
             SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final email = _emailController.text;
                 final password = _passwordController.text;
                 final confirmPassword = _confirmPasswordController.text;
@@ -206,7 +206,7 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
                 final firstName = _firstNameController.text.trim();
                 final middleName = _middleNameController.text.trim();
 
-                // Проверка фамилии
+                // Валидация
                 if (lastName.isEmpty) {
                   _showError('Пожалуйста, введите фамилию');
                   return;
@@ -216,7 +216,6 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
                   return;
                 }
 
-                // Проверка имени
                 if (firstName.isEmpty) {
                   _showError('Пожалуйста, введите имя');
                   return;
@@ -226,19 +225,16 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
                   return;
                 }
 
-                // Проверка отчества (если заполнено)
                 if (middleName.isNotEmpty && !_isValidName(middleName)) {
                   _showError('Отчество может содержать только буквы, пробелы и дефисы');
                   return;
                 }
 
-                // Проверка email
                 if (!_isValidEmail(email)) {
                   _showError('Пожалуйста, введите корректный email');
                   return;
                 }
 
-                // Проверка пароля
                 if (password.length < 8) {
                   _showError('Пароль должен содержать минимум 8 символов');
                   return;
@@ -255,14 +251,13 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
                   return;
                 }
 
-                // Проверка принятия условий
                 if (!_isChecked) {
                   _showError('Пожалуйста, примите условия использования');
                   return;
                 }
 
-                // Если все проверки пройдены, вызов сервиса регистрации
-                AuthService.signUp(
+                // 🚀 Регистрация + переход если успех
+                final success = await AuthService.signUp(
                   context: context,
                   email: email,
                   password: password,
@@ -271,7 +266,11 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
                   middleName: middleName,
                 );
 
+                if (success) {
+                  Navigator.pushNamed(context, '/email-verification');
+                }
               },
+
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 minimumSize: Size(double.infinity, 50),

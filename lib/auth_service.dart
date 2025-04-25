@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 /// Здесь содержится логика регистрации, входа через Google и авто-перехода при активной сессии
 class AuthService {
   /// Регистрация пользователя по email и паролю
-  static Future<void> signUp({
+  static Future<bool> signUp({
     required BuildContext context,
     required String email,
     required String password,
@@ -26,13 +26,14 @@ class AuthService {
 
       if (response.user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Регистрация прошла успешно!')),
+          const SnackBar(content: Text('Первый этап регистрации прошёл успешно!\nПожалуйста, подтвердите почту.')),
         );
-        Navigator.pop(context); // возвращаемся на экран входа
+        return true; // ✅ Успех
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
         );
+        return false; // ❌ Неудача
       }
     } on AuthException catch (e) {
       if (e.message.contains('already registered') || e.message.contains('User already registered')) {
@@ -44,12 +45,15 @@ class AuthService {
           SnackBar(content: Text('Ошибка регистрации: ${e.message}')),
         );
       }
+      return false;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Неизвестная ошибка: ${e.toString()}')),
       );
+      return false;
     }
   }
+
 
   /// Вход по email и паролю
   static Future<void> signInWithEmail({

@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'forgot_password_page.dart';
-import 'home_page.dart';
-import 'auth_signup_widget.dart';
 import '../auth_service.dart';
 
 class AuthSignInWidget extends StatefulWidget {
