@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../profile_service.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,6 +9,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Map<String, String>> openedSections = [];
+  String userName = '...';//Имя пользователя
+
+  //Функция для подгрузки имени пользователя
+  Future<void> _loadUserName() async {
+    String? name = await ProfileService().getFirstName();
+    setState(() {
+      userName = name ?? 'Гость';
+    });
+  }
 
   final List<Map<String, String>> exerciseSections = [
     {'title': 'Упражнения для мимических мышц', 'imagePath': 'assets/image/exercise_face.png', 'route': '/face_exercises'},
@@ -21,6 +31,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _loadUserName();
     _loadOpenedSections();
   }
 
@@ -62,14 +73,18 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           if (index == 0) {
             Navigator.pushReplacementNamed(context, '/exercise_sections');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/home');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/profile');
           }
         },
       ),
       body: Column(
         children: [
           const SizedBox(height: 20),
-          const Text(
-            'Привет, Аня!',
+          Text(
+            'Привет, $userName!',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),

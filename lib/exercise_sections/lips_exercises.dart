@@ -7,6 +7,7 @@ class LipsExercisesPage extends StatelessWidget {
     {'image': 'lips.png', 'route': '/lips_3'},
   ];
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
