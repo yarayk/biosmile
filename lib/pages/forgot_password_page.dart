@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ForgotPasswordPage extends StatelessWidget {
   const ForgotPasswordPage({Key? key}) : super(key: key);
@@ -98,8 +99,27 @@ class ForgotPasswordPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(28),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/reset-password');
+                  onPressed: () async {
+                    final email = emailController.text.trim();
+
+                    if (email.isEmpty || !email.contains('@')) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Введите корректный email')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      await Supabase.instance.client.auth.resetPasswordForEmail(email);
+
+                      // Успешно — переходим на страницу сброса
+                      Navigator.pushNamed(context, '/reset-password');
+                    } catch (e) {
+                      // Ошибка при отправке письма
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Ошибка при отправке письма: $e')),
+                      );
+                    }
                   },
                   child: const Text(
                     'ОТПРАВИТЬ ПИСЬМО',

@@ -79,10 +79,10 @@ class ResetPasswordPage extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/');
+                    Navigator.pushReplacementNamed(context, '/password-page');
                   },
                   child: const Text(
-                    'СТРАНИЦА АВТОРИЗАЦИИ',
+                    'СОЗДАТЬ НОВЫЙ ПАРОЛЬ',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
