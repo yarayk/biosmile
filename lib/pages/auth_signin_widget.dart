@@ -98,6 +98,8 @@ class _AuthSignInWidgetState extends State<AuthSignInWidget> {
                   email: email,
                   password: password,
                 );
+                // Если все проверки пройдены
+                Navigator.pushNamed(context, '/home');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,

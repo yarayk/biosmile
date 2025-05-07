@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../profile_service.dart';
+import 'progress_with_points.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,18 +81,10 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const SizedBox(height: 40),
 
-            // Прогресс-бар без текста
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: 0.56,
-                  minHeight: 12,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                ),
-              ),
+            //прогресс бар и очки
+            ProgressWithPoints(
+              progress: 0.56,
+              points: 1000, // можно подставить значение из переменной
             ),
             const SizedBox(height: 20),
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'progress_with_points.dart';
 
 class ExerciseSectionsPage extends StatefulWidget {
   @override
@@ -59,21 +60,12 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
         child: Column(
           children: [
             const SizedBox(height: 40),
+            const SizedBox(height: 40),
 
-            // Прогресс-бар
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: 0.56,
-                  minHeight: 12,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                ),
-              ),
-            ),
+            ProgressWithPoints(progress: 0.56, points: 1000),
+
             const SizedBox(height: 20),
+
 
             // Секция упражнений
             ...exerciseSections.map((section) {

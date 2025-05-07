@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../profile_service.dart';
+import 'progress_with_points.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -88,18 +89,12 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: LinearProgressIndicator(
-                value: 0.56,
-                minHeight: 12,
-                backgroundColor: Colors.grey[300],
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-              ),
-            ),
+          //прогресс бар и очки
+          ProgressWithPoints(
+            progress: 0.56,
+            points: 1000, // можно подставить значение из переменной
           ),
+
           const SizedBox(height: 20),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),

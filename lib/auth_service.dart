@@ -28,12 +28,12 @@ class AuthService {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Первый этап регистрации прошёл успешно!\nПожалуйста, подтвердите почту.')),
         );
-        return true; // ✅ Успех
+        return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
         );
-        return false; // ❌ Неудача
+        return false;
       }
     } on AuthException catch (e) {
       if (e.message.contains('already registered') || e.message.contains('User already registered')) {

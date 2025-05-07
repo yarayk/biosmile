@@ -185,6 +185,7 @@ class _SettingsPageState extends State<SettingsPage> {
               SizedBox(height: 12),
               _styledTextField('Электронная почта', _emailController),
               SizedBox(height: 12),
+
               SizedBox(height: 16),
               Text('ID Пользователя: $_userId', style: TextStyle(color: Colors.grey)),
               Align(
