@@ -5,7 +5,6 @@ import 'pages/terms_of_service_page.dart';
 import 'pages/privacy_policy_page.dart';
 import 'pages/email_verification_page.dart';
 import 'pages/forgot_password_page.dart';
-import 'pages/verification_code_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/home_page.dart';
 import 'pages/exercise_sections.dart';
@@ -41,8 +40,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Для локализации календаря
+import 'deep_link_handler.dart';
 
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 // контрольная точка 1
 void main() async{
   // подключение базы данных
@@ -76,7 +77,6 @@ class MyApp extends StatelessWidget {
         '/privacy': (context) => PrivacyPolicyPage(),
         '/email-verification': (context) => EmailVerificationPage(),
         '/forgot-password': (context) => ForgotPasswordPage(),
-        '/verification-code': (context) => VerificationCodePage(),
         '/reset-password': (context) => ResetPasswordPage(),
         '/home': (context) => HomePage(),
         '/exercise_sections': (context) => ExerciseSectionsPage(),

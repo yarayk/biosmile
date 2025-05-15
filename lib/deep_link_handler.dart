@@ -9,7 +9,6 @@ class DeepLinkHandler {
       if (accessToken != null) {
         try {
           await Supabase.instance.client.auth.getSessionFromUrl(uri);
-
           navigatorKey.currentState?.pushNamedAndRemoveUntil(
             '/password-page',
                 (route) => false,
