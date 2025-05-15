@@ -1,0 +1,2 @@
+const URL_KEY = 'https://wlinnnojuqxbpoeizyvz.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsaW5ubm9qdXF4YnBvZWl6eXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyMjE5MTQsImV4cCI6MjA1Nzc5NzkxNH0.-rw_YKxF-IWKWyADQaRdrBZqbxa4REO6TrAiBFmAd50';
