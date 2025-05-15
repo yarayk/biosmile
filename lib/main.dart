@@ -32,7 +32,6 @@ import 'exercise_sections/cheeks_exercises.dart';
 import 'exercise_sections/cheeks_exercises/cheeks_1.dart';
 import 'exercise_sections/cheeks_exercises/cheeks_2.dart';
 import 'exercise_sections/cheeks_exercises/cheeks_3.dart';
-import 'exercise_sections/additional_exercises.dart';
 import 'exercise_sections/additional_exercises/additional_1.dart';
 import 'exercise_sections/additional_exercises/additional_2.dart';
 import 'exercise_sections/additional_exercises/additional_3.dart';
@@ -41,7 +40,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Для локализации календаря
-import '../deep_link_handler.dart';
+import 'deep_link_handler.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 // контрольная точка 1
@@ -53,10 +52,21 @@ void main() async{
     url: URL_KEY,
     anonKey: ANON_KEY,
   );
-  await DeepLinkHandler.handleInitialUri();
-  DeepLinkHandler.startUriListener();
-
   await initializeDateFormatting('ru_RU', null); // Инициализация локализации для календаря
+
+  // Обработка deep link (восстановление пароля)
+  Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+    final AuthChangeEvent event = data.event;
+    final Session? session = data.session;
+
+    if (event == AuthChangeEvent.passwordRecovery && session != null) {
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        '/password-page',
+            (route) => false,
+      );
+    }
+  });
+
   runApp(const MyApp());
 }
 
