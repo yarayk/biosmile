@@ -8,44 +8,300 @@ class PhotoDiaryPage extends StatefulWidget {
 class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
   String selectedFilter = 'Все фото';
   String? selectedSection;
+  String? selectedExercise;
+  String activeTab = 'Раздел';
+
   final List<String> filters = ['Годы', 'Месяцы', 'Дни', 'Все фото'];
-  final List<String> sections = [
-    'Упражнения для мимических мышц',
-    'Упражнения для щек',
-    'Упражнения для нижней челюсти',
-    'Упражнения для губ',
-    'Упражнения для языка',
-  ];
+
+  final Map<String, List<String>> sectionExercises = {
+    'Упражнения для мимических мышц': [
+      'Поднять брови вверх, удержать',
+      'Нахмурить брови, удержать',
+      'Закрыть глаза (крепко-слабо)',
+      'Поморгать',
+      'Двигать глазным яблоком, закрыв глаза',
+      'Прищуриваться, подтягивая нижнее веко',
+      'Поочередно закрывать правый и левый глаз',
+      'Сморщить нос',
+      'Раздувать ноздри, шевелить носом. Втягивать ноздри',
+      'Звук “М”',
+      'Звук “О”',
+      'Плевать',
+      'Звуки “У”, “А”',
+      'Рот открыт, звуки “О”, “А”',
+      'Произносить “Т”, “П”, “Р”, “У”',
+    ],
+    'Упражнения для щек': [
+      'Надуть обе щеки',
+      'Втянуть обе щеки',
+      'Надуть правую щеку, затем левую',
+      'Чередовать 1 и 2 задание',
+      'Имитировать полоскание',
+    ],
+    'Упражнения для нижней челюсти': [
+      'Рот приоткрыть, широко открыть, плотно закрыть',
+      'Движения нижней челюстью вперед, назад, вправо, влево, круговые движения',
+      'Имитация жевания с открытым/ закрытым ртом',
+    ],
+    'Упражнения для губ': [
+      'Вытянуть губы вперед - трубочкой',
+      'Движения “трубочкой”',
+      'Трубочка-улыбочка поочередно',
+      'Улыбка (вправо-влево)',
+      'Длинное задание',
+      'Захватывать зубами верхние и нижние губы',
+      'Оскалиться',
+    ],
+    'Упражнения для языка': [
+      'Открыть рот, язык поднять, опустить',
+      'Рот открыт, язык вверх-вниз',
+      'Рот открыть, язык к правому уху, к левому',
+      'Облизать нижнюю, затем верхнюю губу',
+      'Облизать губы по кругу',
+      'Языком погладить твердое небо',
+      'Длинное задание',
+    ],
+    'Дополнительные упражнения': [
+      'Поцокать, как лошадка',
+      'Брать с ладони мелкие куски яблока',
+      'Вибрация губ (фыркать)',
+      'Длинное задание',
+    ],
+  };
+
+  void showSectionBottomSheet() {
+    showModalBottomSheet(
+      isScrollControlled: false,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      context: context,
+      builder: (context) {
+        String? errorMessage;
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            List<String> itemsToShow = [];
+            if (activeTab == 'Раздел') {
+              itemsToShow = sectionExercises.keys.toList();
+            } else if (selectedSection != null) {
+              itemsToShow = sectionExercises[selectedSection] ?? [];
+            }
+
+            bool hasSelection = selectedSection != null || selectedExercise != null;
+
+            return Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (hasSelection)
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedSection = null;
+                              selectedExercise = null;
+                              activeTab = 'Раздел';
+                            });
+                            setModalState(() {
+                              errorMessage = null;
+                            });
+                          },
+                          child: Text(
+                            'Сбросить',
+                            style: TextStyle(
+                              color: Colors.orange,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      else
+                        SizedBox(width: 90),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          hasSelection ? 'Сохранить' : 'Закрыть',
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      color: Colors.grey.shade200,
+                    ),
+                    padding: EdgeInsets.all(4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        buildTabOption('Раздел', setModalState, () {
+                          errorMessage = null;
+                        }),
+                        buildTabOption('Упражнение', setModalState, () {
+                          if (selectedSection == null) {
+                            errorMessage = 'Сначала выберите фильтр по разделам';
+                          } else {
+                            errorMessage = null;
+                          }
+                        }),
+                      ],
+                    ),
+                  ),
+                  if (errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        errorMessage!,
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  SizedBox(height: 16),
+                  Container(
+                    height: 250,
+                    child: ListView(
+                      children: itemsToShow.map((item) {
+                        final isSelected = (activeTab == 'Раздел' && item == selectedSection) ||
+                            (activeTab == 'Упражнение' && item == selectedExercise);
+                        return ListTile(
+                          title: Text(
+                            item,
+                            style: TextStyle(
+                              color: isSelected ? Colors.purple : Colors.blue,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                          onTap: () {
+                            if (activeTab == 'Раздел') {
+                              setState(() {
+                                selectedSection = item;
+                                selectedExercise = null;
+                              });
+                              setModalState(() {
+                                errorMessage = null;
+                              });
+                            } else if (selectedSection == null) {
+                              setModalState(() {
+                                errorMessage = 'Сначала выберите фильтр по разделам';
+                              });
+                            } else {
+                              setState(() {
+                                selectedExercise = item;
+                              });
+                              setModalState(() {
+                                errorMessage = null;
+                              });
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget buildTabOption(
+      String title,
+      void Function(void Function()) setModalState,
+      void Function() updateError,
+      ) {
+    final isActive = title == activeTab;
+    return GestureDetector(
+      onTap: () {
+        setModalState(() {
+          updateError();
+          if (title == 'Упражнение' && selectedSection == null) return;
+          activeTab = title;
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isActive ? Colors.purple : Colors.transparent,
+          borderRadius: BorderRadius.circular(25),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isActive ? Colors.white : Colors.grey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildFilterWithIcon() {
+    return GestureDetector(
+      onTap: showSectionBottomSheet,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              selectedSection == null
+                  ? 'Фильтрация по разделам'
+                  : 'Раздел: $selectedSection${selectedExercise != null ? '\nУпражнение: $selectedExercise' : ''}',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Icon(Icons.keyboard_arrow_down, color: Colors.amber),
+        ],
+      ),
+    );
+  }
 
   Widget buildFilterTabs() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.amber, width: 2),
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.amber, width: 3),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: filters.map((filter) {
           final isSelected = selectedFilter == filter;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedFilter = filter;
-                selectedSection = null;
-              });
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.lightGreen : Colors.transparent,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                filter,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.w500,
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => selectedFilter = filter),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.green : Colors.transparent,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Center(
+                  child: Text(
+                    filter,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -57,95 +313,49 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
 
   Widget buildHeader() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back),
+        IconButton(
+          icon: Icon(Icons.arrow_back, size: 30),
+          onPressed: () => Navigator.pop(context),
         ),
-        Text('Фото-дневник', style: TextStyle(fontSize: 20)),
-        SizedBox(width: 24),
+        Expanded(
+          child: Center(
+            child: Text(
+              'Фото-дневник',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+        SizedBox(width: 40),
       ],
     );
   }
 
-  Widget buildSectionFilter() {
-    return GestureDetector(
-      onTap: showBottomSheetFilter,
-      child: Row(
-        children: [
-          Text(
-            selectedSection ?? 'Фильтрация по разделам',
-            style: TextStyle(
-              color: Colors.blue,
-              decoration: TextDecoration.underline,
-            ),
-          ),
-          SizedBox(width: 8),
-          Icon(Icons.filter_alt, color: Colors.orange),
-        ],
-      ),
-    );
-  }
-
-  void showBottomSheetFilter() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: MediaQuery.of(context).viewInsets,
-          child: Container(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (selectedSection != null)
-                      TextButton(
-                        onPressed: () => setState(() {
-                          selectedSection = null;
-                          Navigator.pop(context);
-                        }),
-                        child: Text('Сбросить', style: TextStyle(color: Colors.orange)),
-                      ),
-                    Text('Раздел', style: TextStyle(fontWeight: FontWeight.bold)),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('Закрыть', style: TextStyle(color: Colors.orange)),
-                    ),
-                  ],
-                ),
-                ...sections.map((section) => ListTile(
-                  title: Text(
-                    section,
-                    style: TextStyle(
-                      color: selectedSection == section ? Colors.purple : Colors.black,
-                      fontWeight: selectedSection == section ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                  onTap: () => setState(() {
-                    selectedSection = section;
-                    Navigator.pop(context);
-                  }),
-                )),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  Widget buildPhotoRow() {
+    return SizedBox(); // Заглушка под будущие фотографии
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xfff0f0f7),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildHeader(),
+              SizedBox(height: 16),
+              buildFilterTabs(),
+              SizedBox(height: 20),
+              buildFilterWithIcon(),
+              SizedBox(height: 20),
+              buildPhotoRow(),
+            ],
+          ),
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
         items: [
@@ -154,7 +364,7 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
             label: 'Упражнения',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset('assets/image/home.png', width: 40, height: 40),
+            icon: Image.asset('assets/image/home.png', width: 30, height: 30),
             label: 'Главная',
           ),
           BottomNavigationBarItem(
@@ -171,24 +381,6 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
             Navigator.pushReplacementNamed(context, '/profile');
           }
         },
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildHeader(),
-                SizedBox(height: 16),
-                buildFilterTabs(),
-                SizedBox(height: 12),
-                buildSectionFilter(),
-                // Сетка изображений удалена
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
