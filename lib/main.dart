@@ -106,8 +106,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Для локализации календаря
+import 'deep_link_handler.dart';
 
-
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 // контрольная точка 1
 void main() async{
   // подключение базы данных
@@ -118,6 +119,20 @@ void main() async{
     anonKey: ANON_KEY,
   );
   await initializeDateFormatting('ru_RU', null); // Инициализация локализации для календаря
+
+  // Обработка deep link (восстановление пароля)
+  Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+    final AuthChangeEvent event = data.event;
+    final Session? session = data.session;
+
+    if (event == AuthChangeEvent.passwordRecovery && session != null) {
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        '/password-page',
+            (route) => false,
+      );
+    }
+  });
+
   runApp(const MyApp());
 }
 
@@ -129,6 +144,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'My App',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
