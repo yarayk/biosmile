@@ -11,6 +11,7 @@ import 'pages/home_page.dart';
 import 'pages/exercise_sections.dart';
 import 'pages/photo_diary_page.dart';
 import 'pages/profile_page.dart';
+import 'pages/Photo.dart';
 import 'pages/settings_page.dart';
 import 'exercise_sections/tongue_exercises.dart';
 import 'exercise_sections/lips_exercises.dart';
@@ -131,6 +132,15 @@ void main() async{
             (route) => false,
       );
     }
+
+    // После входа через Google (или любой вход)
+    if (event == AuthChangeEvent.signedIn && session != null) {
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        '/home',
+            (route) => false,
+      );
+    }
+
   });
 
   runApp(const MyApp());
@@ -162,6 +172,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/exercise_sections': (context) => ExerciseSectionsPage(),
         '/profile': (context) => ProfilePage(),
+        '/photo': (context) => CameraExerciseScreen(),
         '/photo_diary': (context) => PhotoDiaryPage(),
         '/settings': (context) => SettingsPage(),
         '/tongue_1': (context) => Tongue1(),

@@ -182,6 +182,36 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 20),
 
+// Кнопка "Сделать фото"
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/photo');
+                  },
+                  icon: const Icon(Icons.camera_alt, color: Colors.white),
+                  label: const Text(
+                    'Сделать фото',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 4,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+
             // Календарь
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
