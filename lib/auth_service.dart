@@ -108,13 +108,14 @@ class AuthService {
 //Возвращает правильный URL в зависимости от платформы
   static String getRedirectUrl() {
     if (kIsWeb) {
-      return 'http://localhost:3000';  // веб-редирект
+      return 'http://localhost:3000';  // для Web
     }
     if (Platform.isAndroid || Platform.isIOS) {
-      return 'com.mycompany.biosmile://callback';  // мобильный редирект
+      return 'smbiosmile://recovery';  // теперь будет использоваться этот URL
     }
-    return 'http://localhost:3000';  // fallback для других случаев
+    return 'http://localhost:3000';  // fallback
   }
+
 
   /// Проверка активной сессии пользователя и редирект на /home
   static void checkUserSession(BuildContext context) {
