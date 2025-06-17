@@ -3,13 +3,13 @@ import '../pages/progress_with_points.dart';
 
 class LipsExercisesPage extends StatelessWidget {
   final List<Map<String, String>> exercises = [
-    {'title': '1. Вытянуть губы вперед - трубочкой', 'route': '/face_1'},
-    {'title': '2. Движения “трубочкой”', 'route': '/face_2'},
-    {'title': '3. Трубочка-улыбочка поочередно', 'route': '/face_3'},
-    {'title': '4. Улыбка (вправо-влево)', 'route': '/face_4'},
-    {'title': '5. Длинное задание', 'route': '/face_5'},
-    {'title': '6. Захватывать зубами верхние и нижние губы', 'route': '/face_6'},
-    {'title': '7. Оскалиться', 'route': '/face_7'},
+    {'title': '1. Вытянуть губы вперед - трубочкой', 'route': '/lips_1'},
+    {'title': '2. Движения “трубочкой”', 'route': '/lips_2'},
+    {'title': '3. Трубочка-улыбочка поочередно', 'route': '/lips_3'},
+    {'title': '4. Улыбка (вправо-влево)', 'route': '/lips_4'},
+    {'title': '5. Длинное задание', 'route': '/lips_5'},
+    {'title': '6. Захватывать зубами верхние и нижние губы', 'route': '/lips_6'},
+    {'title': '7. Оскалиться', 'route': '/lips_7'},
   ];
 
 
