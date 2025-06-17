@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Простая модель данных профиля, которая используется в UI
+/// Модель данных профиля пользователя
 class UserProfileData {
   final String lastName;
   final String firstName;
@@ -9,6 +9,9 @@ class UserProfileData {
   final String email;
   final String id;
   final String avatarUrl;
+  final int coins;
+  final int xp;
+  final int level;
 
   UserProfileData({
     required this.lastName,
@@ -17,11 +20,13 @@ class UserProfileData {
     required this.email,
     required this.id,
     required this.avatarUrl,
+    required this.coins,
+    required this.xp,
+    required this.level,
   });
 }
 
 class ProfileService {
-  // Получаем доступ к Supabase клиенту
   final supabase = Supabase.instance.client;
 
   /// Загружает профиль пользователя из Supabase и SharedPreferences
@@ -46,6 +51,9 @@ class ProfileService {
       email: profile['email'] ?? '',
       id: profile['id'] ?? '',
       avatarUrl: savedAvatar ?? profile['avatar_url'] ?? 'assets/avatars/avatar_1.png',
+      coins: profile['coins'] ?? 0,
+      xp: profile['xp'] ?? 0,
+      level: profile['level'] ?? 1,
     );
   }
 
@@ -59,6 +67,15 @@ class ProfileService {
     return nameParts.length > 1 ? nameParts[1] : nameParts[0];
   }
 
+  Future<List?> getStates() async {
+    final profile = await fetchUserProfile();
+    if (profile == null) return null;
+    final coins = profile['coins'] ?? '';
+    final xp = profile['xp'] ?? '';
+    final level = profile['level'] ?? '';
+    return [coins, xp, level];
+  }
+
   /// Сохраняет профиль пользователя в Supabase и SharedPreferences
   Future<void> saveProfileData(UserProfileData data) async {
     final prefs = await SharedPreferences.getInstance();
@@ -69,6 +86,9 @@ class ProfileService {
     await saveUserProfile(
       fullName: fullName,
       avatarUrl: data.avatarUrl,
+      coins: data.coins,
+      xp: data.xp,
+      level: data.level,
     );
   }
 
@@ -77,32 +97,39 @@ class ProfileService {
     final user = supabase.auth.currentUser;
     if (user == null) return null;
 
-    // Ищем профиль по id (id = auth.uid())
-    final response = await supabase
-        .from('users')
-        .select()
-        .eq('id', user.id)
-        .single();
+    try {
+      final response = await supabase
+          .from('users')
+          .select()
+          .eq('id', user.id)
+          .single();
 
-    return response;
+      return response;
+    } catch (e) {
+      print('Ошибка при получении профиля: $e');
+      return null;
+    }
   }
 
   /// Создание или обновление профиля пользователя
-  ///
-  /// Использует upsert — если профиль есть, обновит его,
-  /// если нет — создаст новый
   Future<void> saveUserProfile({
     required String fullName,
     String? avatarUrl,
+    int? coins,
+    int? xp,
+    int? level,
   }) async {
     final user = supabase.auth.currentUser;
     if (user == null) throw Exception('Пользователь не авторизован');
 
-    await supabase.from('users').upsert({
+    final updateData = {
       'id': user.id,
       'email': user.email,
       'full_name': fullName,
       'avatar_url': avatarUrl ?? '',
-    });
+    };
+
+
+    await supabase.from('users').upsert(updateData);
   }
 }

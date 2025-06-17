@@ -10,9 +10,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Map<String, String>> openedSections = [];
-  String userName = '...';//Имя пользователя
+  String userName = '...'; // Имя пользователя
+  int userCoins = 0; // Инициализация значений по умолчанию
+  int userXp = 0;
+  int userLevel = 0;
 
-  //Функция для подгрузки имени пользователя
+  // Функция для подгрузки имени пользователя
   Future<void> _loadUserName() async {
     String? name = await ProfileService().getFirstName();
     setState(() {
@@ -20,19 +23,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> _loadStates() async {
+    List? states = await ProfileService().getStates();
+    setState(() {
+      userCoins = (states?[0] ?? 0) as int; // Обеспечиваем корректное присваивание
+      userXp = (states?[1] ?? 0) as int;
+      userLevel = (states?[2] ?? 0) as int;
+    });
+  }
+
+
   final List<Map<String, String>> exerciseSections = [
     {'title': 'Упражнения для мимических мышц', 'imagePath': 'assets/image/exercise_face.png', 'route': '/face_exercises'},
     {'title': 'Упражнения для щек', 'imagePath': 'assets/image/exercise_cheeks.png', 'route': '/cheeks_exercises'},
     {'title': 'Упражнения для нижней челюсти', 'imagePath': 'assets/image/exercise_jaw.png', 'route': '/jaw_exercises'},
     {'title': 'Упражнения для губ', 'imagePath': 'assets/image/exercise_lips.png', 'route': '/lips_exercises'},
     {'title': 'Упражнения для языка', 'imagePath': 'assets/image/exercise_tongue.png', 'route': '/tongue_exercises'},
-    {'title': 'дополнительные упражнения', 'imagePath': 'assets/image/exercise_additional.png', 'route': '/additional_exercises'},
+    {'title': 'Дополнительные упражнения', 'imagePath': 'assets/image/exercise_additional.png', 'route': '/additional_exercises'},
   ];
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _loadStates();
     _loadOpenedSections();
   }
 
@@ -89,12 +103,11 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          //прогресс бар и очки
+          // Прогресс бар и очки
           ProgressWithPoints(
-            progress: 0.56,
-            points: 1000, // можно подставить значение из переменной
+            progress: userXp / 100,
+            points: userCoins, // Передаём значения
           ),
-
           const SizedBox(height: 20),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),

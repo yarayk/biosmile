@@ -62,7 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
       middleName: _middleNameController.text.trim(),
       email: _emailController.text.trim(),
       id: _userId,
-      avatarUrl: _selectedAvatar!,
+      avatarUrl: _selectedAvatar!, coins: 0, xp: 0, level: 0,
     );
 
     await _profileService.saveProfileData(data);

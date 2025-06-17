@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../profile_service.dart'; // Убедись, что этот импорт есть
 import 'progress_with_points.dart';
 
 class ExerciseSectionsPage extends StatefulWidget {
@@ -17,6 +18,25 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
     {'title': 'дополнительные упражнения', 'imagePath': 'assets/image/exercise_additional.png', 'route': '/additional_exercises'},
   ];
 
+  int userCoins = 0;
+  int userXp = 0;
+  int userLevel = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStates();
+  }
+
+  Future<void> _loadStates() async {
+    List? states = await ProfileService().getStates();
+    setState(() {
+      userCoins = (states?[0] ?? 0) as int;
+      userXp = (states?[1] ?? 0) as int;
+      userLevel = (states?[2] ?? 0) as int;
+    });
+  }
+
   Future<void> _saveOpenedSection(String sectionTitle) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> openedSections = prefs.getStringList('opened_sections') ?? [];
@@ -31,7 +51,7 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
+        currentIndex: 0,
         items: [
           BottomNavigationBarItem(
             icon: Image.asset('assets/image/work.png', width: 40, height: 40),
@@ -60,14 +80,11 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
         child: Column(
           children: [
             const SizedBox(height: 40),
-            const SizedBox(height: 40),
-
-            ProgressWithPoints(progress: 0.56, points: 1000),
-
+            ProgressWithPoints(
+              progress: userXp / 100,
+              points: userCoins,
+            ),
             const SizedBox(height: 20),
-
-
-            // Секция упражнений
             ...exerciseSections.map((section) {
               return GestureDetector(
                 onTap: () async {
@@ -84,7 +101,6 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
   }
 }
 
-// Виджет для кнопок разделов
 class ExerciseSectionButton extends StatelessWidget {
   final String imagePath;
 

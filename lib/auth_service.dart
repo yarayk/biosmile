@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
-
+import 'game_scripts.dart';
 /// Сервис для управления авторизацией пользователя
 /// Здесь содержится логика регистрации, входа через Google и авто-перехода при активной сессии
 class AuthService {
@@ -25,6 +25,8 @@ class AuthService {
     );
 
       if (response.user != null) {
+        await GamificationService().rewardForSignup(context);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Первый этап регистрации прошёл успешно!\nПожалуйста, подтвердите почту.')),
         );
@@ -68,6 +70,8 @@ class AuthService {
       );
 
       if (response.user != null) {
+        await GamificationService().rewardForLogin(context);
+
         Navigator.pushReplacementNamed(context, '/home');
       } else {
         _showMessage(context, 'Не удалось войти. Попробуйте ещё раз.');

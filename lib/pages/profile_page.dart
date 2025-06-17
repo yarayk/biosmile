@@ -32,11 +32,15 @@ class _ProfilePageState extends State<ProfilePage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   String userName = '...';
+  int userCoins = 0;
+  int userXp = 0;
+  int userLevel = 0;
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _loadStates();
   }
 
   //Функция для подгрузки имени пользователя
@@ -46,6 +50,16 @@ class _ProfilePageState extends State<ProfilePage> {
       userName = name ?? 'Гость';
     });
   }
+
+  Future<void> _loadStates() async {
+    List? states = await ProfileService().getStates();
+    setState(() {
+      userCoins = (states?[0] ?? 0) as int;
+      userXp = (states?[1] ?? 0) as int;
+      userLevel = (states?[2] ?? 0) as int;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +97,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
             //прогресс бар и очки
             ProgressWithPoints(
-              progress: 0.56,
-              points: 1000, // можно подставить значение из переменной
+              progress: userXp / 100,
+              points: userCoins, // можно подставить значение из переменной
             ),
             const SizedBox(height: 20),
 
@@ -121,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'Уровень 1',
+                                'Уровень $userLevel',
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,

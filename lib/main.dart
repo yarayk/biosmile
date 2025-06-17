@@ -41,6 +41,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Для локализации календаря
 import 'deep_link_handler.dart';
+import "game_scripts.dart";
 
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -48,7 +49,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async{
   // подключение базы данных
   WidgetsFlutterBinding.ensureInitialized();
-
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    final context = WidgetsBinding.instance.window;
+  });
   await Supabase.initialize(
     url: URL_KEY,
     anonKey: ANON_KEY,
