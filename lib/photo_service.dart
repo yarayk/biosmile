@@ -17,7 +17,6 @@ Future<List<Photo>> fetchPhotos({
     query = query.eq('user_id', userId);
   }
 
-  // Фильтруем по разделу и упражнению вместе
   if (section != null && section.isNotEmpty) {
     query = query.eq('section', section);
   }
@@ -38,28 +37,34 @@ Future<List<Photo>> fetchPhotos({
     query = query.gte('date_taken', startOfDay.toIso8601String());
   }
 
-  print('🔍 Фильтруем:');
-  print('  section: $section');
-  print('  exercise: $exercise');
-
   try {
     final List<Map<String, dynamic>> response = await query
         .order('date_taken', ascending: false)
         .select();
 
-    print('📸 Получено фото: ${response.length}');
+    final bucket = 'ufacephoto';
+    final storage = supabase.storage.from(bucket);
+
+    final List<Photo> photos = [];
+
     for (final e in response) {
-      print('📷 Фото:');
-      print('   ➤ section: ${e['section']}');
-      print('   ➤ exercise: ${e['exercise']}');
-      print('   ➤ URL: ${e['photo_url']}');
+      final path = e['image_url'] as String;
 
+      try {
+        final signedUrl = await storage.createSignedUrl(path, 3600); // 1 час
 
+        final updatedJson = Map<String, dynamic>.from(e);
+        updatedJson['image_url'] = signedUrl;
+
+        photos.add(Photo.fromJson(updatedJson));
+      } catch (e) {
+        print('Ошибка получения ссылки для "$path": $e');
+        continue;
+      }
     }
 
-    return response.map((e) => Photo.fromJson(e)).toList();
+    return photos;
   } catch (error) {
     throw Exception('Ошибка загрузки данных: $error');
   }
-
 }

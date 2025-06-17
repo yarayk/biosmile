@@ -149,12 +149,18 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
         selectedExercise!,
       );
 
-      // (опционально) сохранить URL и метаданные в таблицу Supabase
-      await Supabase.instance.client.from('photos').insert({
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+
+      if (userId == null) {
+        throw Exception('Пользователь не авторизован');
+      }
+
+      await Supabase.instance.client.from('users_photos').insert({
+        'user_id': userId,
         'image_url': url,
         'section': selectedSection,
         'exercise': selectedExercise,
-        'created_at': DateTime.now().toIso8601String(),
+        'date_taken': DateTime.now().toIso8601String(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(

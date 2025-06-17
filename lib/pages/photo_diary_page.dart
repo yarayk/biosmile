@@ -451,7 +451,7 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
             SizedBox(height: 20),
             buildFilterWithIcon(),
             SizedBox(height: 20),
-            Expanded(  // Добавляем Expanded, чтобы GridView занял оставшееся место и не вылезал
+            Expanded(
               child: buildPhotoRow(),
             ),
           ],

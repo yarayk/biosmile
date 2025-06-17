@@ -30,7 +30,7 @@ class DeepLinkHandler {
         await Supabase.instance.client.auth.getSessionFromUrl(uri);
 
         navigatorKey.currentState?.pushNamedAndRemoveUntil(
-          '/home', // или куда хочешь после входа
+          '/home',
               (route) => false,
         );
       } catch (e) {
