@@ -1,0 +1,2 @@
+C:/FlutterProjects/biosmile/biosmile/android/app/.cxx/Debug/l5z6z2n2/x86/CMakeFiles/edit_cache.dir
+C:/FlutterProjects/biosmile/biosmile/android/app/.cxx/Debug/l5z6z2n2/x86/CMakeFiles/rebuild_cache.dir

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../photo_view.dart';
+import '../photo_service.dart';
+
 
 class PhotoDiaryPage extends StatefulWidget {
   @override
@@ -6,10 +9,46 @@ class PhotoDiaryPage extends StatefulWidget {
 }
 
 class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
+  List<Photo> photos = [];       // список загруженных фото
+  bool isLoading = false;        // флаг загрузки
+  String? errorMessage;          // сообщение об ошибке
   String selectedFilter = 'Все фото';
   String? selectedSection;
   String? selectedExercise;
   String activeTab = 'Раздел';
+
+  @override
+  void initState() {
+    super.initState();
+    loadPhotos();  // вызываем загрузку фото при инициализации страницы
+  }
+
+  Future<void> loadPhotos() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final fetchedPhotos = await fetchPhotos(
+        section: selectedSection,
+        exercise: selectedExercise,
+        timeFilter: selectedFilter,
+      );
+      setState(() {
+        photos = fetchedPhotos;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
 
   final List<String> filters = ['Годы', 'Месяцы', 'Дни', 'Все фото'];
 
@@ -192,6 +231,7 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
                                 selectedSection = item;
                                 selectedExercise = null;
                               });
+                              loadPhotos();
                               setModalState(() {
                                 errorMessage = null;
                               });
@@ -203,6 +243,7 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
                               setState(() {
                                 selectedExercise = item;
                               });
+                              loadPhotos();
                               setModalState(() {
                                 errorMessage = null;
                               });
@@ -287,7 +328,10 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
           final isSelected = selectedFilter == filter;
           return Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => selectedFilter = filter),
+              onTap: () {
+                setState(() => selectedFilter = filter);
+                loadPhotos();
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: isSelected ? Colors.green : Colors.transparent,
@@ -332,28 +376,85 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
   }
 
   Widget buildPhotoRow() {
-    return SizedBox(); // Заглушка под будущие фотографии
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (errorMessage != null) {
+      return Center(
+        child: Text(
+          'Ошибка загрузки фото:\n$errorMessage',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
+    if (photos.isEmpty) {
+      return Center(
+        child: Text(
+          'Фото не найдены',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: photos.length,
+      itemBuilder: (context, index) {
+        final photo = photos[index];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              // форматируем дату, например "dd.MM.yyyy"
+              '${photo.dateTaken.day.toString().padLeft(2, '0')}.${photo.dateTaken.month.toString().padLeft(2, '0')}.${photo.dateTaken.year}',
+              style: TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+            SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                photo.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Ошибка загрузки изображения: $error');
+                  return Icon(Icons.broken_image);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xfff0f0f7),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildHeader(),
-              SizedBox(height: 16),
-              buildFilterTabs(),
-              SizedBox(height: 20),
-              buildFilterWithIcon(),
-              SizedBox(height: 20),
-              buildPhotoRow(),
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildHeader(),
+            SizedBox(height: 16),
+            buildFilterTabs(),
+            SizedBox(height: 20),
+            buildFilterWithIcon(),
+            SizedBox(height: 20),
+            Expanded(
+              child: buildPhotoRow(),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(

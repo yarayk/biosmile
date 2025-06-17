@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
+import '../photo_upload_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CameraExerciseScreen extends StatefulWidget {
   const CameraExerciseScreen({super.key});
@@ -132,12 +134,46 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
     });
   }
 
-  void _savePhoto() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Фото сохранено')),
-    );
-    _deletePhoto();
+  void _savePhoto() async {
+    if (_correctedImageBytes == null || selectedSection == null || selectedExercise == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Заполните все поля и сделайте фото')),
+      );
+      return;
+    }
+
+    try {
+      final url = await PhotoUploadService.uploadPhoto(
+        _correctedImageBytes!,
+        selectedSection!,
+        selectedExercise!,
+      );
+
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+
+      if (userId == null) {
+        throw Exception('Пользователь не авторизован');
+      }
+
+      await Supabase.instance.client.from('users_photos').insert({
+        'user_id': userId,
+        'image_url': url,
+        'section': selectedSection,
+        'exercise': selectedExercise,
+        'date_taken': DateTime.now().toIso8601String(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Фото успешно сохранено')),
+      );
+      _deletePhoto();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при сохранении: $e')),
+      );
+    }
   }
+
 
   void showSectionBottomSheet() {
     showModalBottomSheet(
