@@ -22,10 +22,18 @@ class _ExerciseTemplateState extends State<ExerciseTemplate> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
+            // Фоновое изображение
+            Positioned.fill(
+              child: Image.asset(
+                'assets/image/fon7.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            // Основное содержимое
             Column(
               children: [
                 const SizedBox(height: 8),
@@ -168,6 +176,8 @@ class _ExerciseTemplateState extends State<ExerciseTemplate> {
                   ),
               ],
             ),
+
+            // Кнопка назад
             Positioned(
               top: 30,
               left: 8,

@@ -132,92 +132,101 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.subdirectory_arrow_left_rounded, color: Colors.orange),
-          onPressed: () => Navigator.of(context).pop(),
+    return Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/image/fon9.png'),
+          fit: BoxFit.cover,
         ),
-        title: Text('Настройки', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          if (_hasChanged)
-            TextButton(
-              onPressed: () async {
-                await _saveSettings();
-                setState(() => _hasChanged = false);
-              },
-              child: Text('Сохранить', style: TextStyle(color: Colors.orange)),
-            )
-        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          onChanged: () => setState(() => _hasChanged = true),
-          child: ListView(
-            children: [
-              Text('Аккаунт', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  onPressed: _showAvatarSelectionDialog,
-                  child: Text('Изменить аватар', style: TextStyle(color: Colors.green)),
+      child: Scaffold(
+        backgroundColor: Colors.transparent, // Прозрачный Scaffold
+        appBar: AppBar(
+          backgroundColor: Colors.white.withOpacity(0.8),
+          leading: IconButton(
+            icon: Icon(Icons.subdirectory_arrow_left_rounded, color: Colors.orange),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: Text('Настройки', style: TextStyle(color: Colors.black)),
+          elevation: 0,
+          actions: [
+            if (_hasChanged)
+              TextButton(
+                onPressed: () async {
+                  await _saveSettings();
+                  setState(() => _hasChanged = false);
+                },
+                child: Text('Сохранить', style: TextStyle(color: Colors.orange)),
+              )
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            onChanged: () => setState(() => _hasChanged = true),
+            child: ListView(
+              children: [
+                Text('Аккаунт', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: _showAvatarSelectionDialog,
+                    child: Text('Изменить аватар', style: TextStyle(color: Colors.green)),
+                  ),
                 ),
-              ),
-              Center(
-                child: _isLoading
-                    ? CircularProgressIndicator() // Пока идет загрузка, показываем индикатор
-                    : CircleAvatar(
-                  backgroundColor: Colors.yellow,
-                  radius: 40,
-                  backgroundImage: AssetImage(_selectedAvatar!),  // Показываем выбранный аватар
+                Center(
+                  child: _isLoading
+                      ? CircularProgressIndicator()
+                      : CircleAvatar(
+                    backgroundColor: Colors.yellow,
+                    radius: 40,
+                    backgroundImage: AssetImage(_selectedAvatar!),
+                  ),
                 ),
-              ),
-              SizedBox(height: 16),
-              _styledTextField('Фамилия *', _lastNameController),
-              SizedBox(height: 12),
-              _styledTextField('Имя *', _firstNameController),
-              SizedBox(height: 12),
-              _styledTextField('Отчество', _middleNameController),
-              SizedBox(height: 12),
-              _styledTextField('Электронная почта', _emailController),
-              SizedBox(height: 12),
-
-              SizedBox(height: 16),
-              Text('ID Пользователя: $_userId', style: TextStyle(color: Colors.grey)),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/privacy'),
-                  child: Text('Политика конфиденциальности', style: TextStyle(color: Colors.green)),
+                SizedBox(height: 16),
+                _styledTextField('Фамилия *', _lastNameController),
+                SizedBox(height: 12),
+                _styledTextField('Имя *', _firstNameController),
+                SizedBox(height: 12),
+                _styledTextField('Отчество', _middleNameController),
+                SizedBox(height: 12),
+                _styledTextField('Электронная почта', _emailController),
+                SizedBox(height: 12),
+                SizedBox(height: 16),
+                Text('ID Пользователя: $_userId', style: TextStyle(color: Colors.grey)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => Navigator.pushNamed(context, '/privacy'),
+                    child: Text('Политика конфиденциальности', style: TextStyle(color: Colors.green)),
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton(
-                  onPressed: () => Navigator.pushNamed(context, '/terms'),
-                  child: Text('Условия использования', style: TextStyle(color: Colors.green)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => Navigator.pushNamed(context, '/terms'),
+                    child: Text('Условия использования', style: TextStyle(color: Colors.green)),
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.orange),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                SizedBox(height: 20),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.orange),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: _confirmLogout,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+                    child: Text('выйти', style: TextStyle(color: Colors.orange)),
+                  ),
                 ),
-                onPressed: _confirmLogout,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-                  child: Text('выйти', style: TextStyle(color: Colors.orange)),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
 }

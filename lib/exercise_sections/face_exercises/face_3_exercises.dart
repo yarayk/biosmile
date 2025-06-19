@@ -45,6 +45,15 @@ class _Face3ExercisesState extends State<Face3Exercises> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Фоновое изображение
+            Positioned.fill(
+              child: Image.asset(
+                'assets/image/fon8.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            // Основной контент поверх фона
             Column(
               children: [
                 const SizedBox(height: 8),
@@ -85,7 +94,6 @@ class _Face3ExercisesState extends State<Face3Exercises> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
-                // Удлинённая зелёная рамка 0 / 3
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 40),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 3),
@@ -140,7 +148,6 @@ class _Face3ExercisesState extends State<Face3Exercises> {
                             ],
                           ),
                         ),
-                        // Галочка
                         Positioned(
                           bottom: 12,
                           right: 12,
@@ -173,7 +180,6 @@ class _Face3ExercisesState extends State<Face3Exercises> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Кнопка появляется только при отмеченной галочке
                 if (_isChecked)
                   ElevatedButton(
                     onPressed: () {
@@ -195,7 +201,8 @@ class _Face3ExercisesState extends State<Face3Exercises> {
                   ),
               ],
             ),
-            // Стрелка назад
+
+            // Кнопка назад
             Positioned(
               top: 30,
               left: 8,
@@ -211,4 +218,5 @@ class _Face3ExercisesState extends State<Face3Exercises> {
       ),
     );
   }
+
 }

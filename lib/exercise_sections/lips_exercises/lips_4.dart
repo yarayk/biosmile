@@ -9,7 +9,7 @@ class Lips4 extends StatelessWidget {
   Widget build(BuildContext context) {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для губ',
-      exerciseTitle: 'Улыбка (вправо-влево)',
+      exerciseTitle: 'Улыбка',
       navigationRoute: '/lips_4_exercises',
     );
   }

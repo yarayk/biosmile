@@ -86,7 +86,7 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
       'Вытянуть губы вперед - трубочкой',
       'Движения “трубочкой”',
       'Трубочка-улыбочка поочередно',
-      'Улыбка (вправо-влево)',
+      'Улыбка',
       'Длинное задание',
       'Захватывать зубами верхние и нижние губы',
       'Оскалиться',
@@ -406,59 +406,83 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
         crossAxisCount: 3,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
+        childAspectRatio: 3 / 5, // ширина:высота; 3:5 примерно = 3:4 с текстом
       ),
       itemCount: photos.length,
       itemBuilder: (context, index) {
         final photo = photos[index];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              // форматируем дату, например "dd.MM.yyyy"
-              '${photo.dateTaken.day.toString().padLeft(2, '0')}.${photo.dateTaken.month.toString().padLeft(2, '0')}.${photo.dateTaken.year}',
-              style: TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-            SizedBox(height: 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                photo.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  print('Ошибка загрузки изображения: $error');
-                  return Icon(Icons.broken_image);
-                },
+
+        return Container(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${photo.dateTaken.day.toString().padLeft(2, '0')}.${photo.dateTaken.month.toString().padLeft(2, '0')}.${photo.dateTaken.year}',
+                style: TextStyle(fontSize: 12, color: Colors.black54),
               ),
-            ),
-          ],
+              SizedBox(height: 4),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: AspectRatio(
+                    aspectRatio: 3 / 4, // Фиксированные пропорции изображения
+                    child: Image.network(
+                      photo.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Ошибка загрузки изображения: $error');
+                        return Icon(Icons.broken_image);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
+
   }
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xfff0f0f7),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildHeader(),
-            SizedBox(height: 16),
-            buildFilterTabs(),
-            SizedBox(height: 20),
-            buildFilterWithIcon(),
-            SizedBox(height: 20),
-            Expanded(
-              child: buildPhotoRow(),
+      extendBody: true,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/image/fon7.png',
+              fit: BoxFit.cover,
             ),
-          ],
-        ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildHeader(),
+                  SizedBox(height: 16),
+                  buildFilterTabs(),
+                  SizedBox(height: 20),
+                  buildFilterWithIcon(),
+                  SizedBox(height: 20),
+                  Expanded(
+                    child: buildPhotoRow(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
+      // Навигация поверх фона
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
+        backgroundColor: Colors.transparent, // <== если нужно полупрозрачное
         items: [
           BottomNavigationBarItem(
             icon: Image.asset('assets/image/work.png', width: 30, height: 30),
