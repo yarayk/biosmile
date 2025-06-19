@@ -45,11 +45,20 @@ class _Cheeks2ExercisesState extends State<Cheeks2Exercises> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Фоновое изображение
+            Positioned.fill(
+              child: Image.asset(
+                'assets/image/fon8.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            // Основной контент поверх фона
             Column(
               children: [
                 const SizedBox(height: 8),
                 const Text(
-                  'Втянуть обе щеки',
+                  'Упражнения для щёк',
                   style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
                 ),
                 const SizedBox(height: 8),
@@ -81,11 +90,10 @@ class _Cheeks2ExercisesState extends State<Cheeks2Exercises> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Надуть обе щеки',
+                  'Втянуть обе щеки',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 8),
-                // Удлинённая зелёная рамка 0 / 3
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 40),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 3),
@@ -140,7 +148,6 @@ class _Cheeks2ExercisesState extends State<Cheeks2Exercises> {
                             ],
                           ),
                         ),
-                        // Галочка
                         Positioned(
                           bottom: 12,
                           right: 12,
@@ -173,7 +180,6 @@ class _Cheeks2ExercisesState extends State<Cheeks2Exercises> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Кнопка появляется только при отмеченной галочке
                 if (_isChecked)
                   ElevatedButton(
                     onPressed: () {
@@ -195,7 +201,8 @@ class _Cheeks2ExercisesState extends State<Cheeks2Exercises> {
                   ),
               ],
             ),
-            // Стрелка назад
+
+            // Кнопка назад
             Positioned(
               top: 30,
               left: 8,
@@ -211,4 +218,5 @@ class _Cheeks2ExercisesState extends State<Cheeks2Exercises> {
       ),
     );
   }
+
 }

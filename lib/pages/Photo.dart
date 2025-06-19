@@ -59,7 +59,7 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
       'Вытянуть губы вперед - трубочкой',
       'Движения “трубочкой”',
       'Трубочка-улыбочка поочередно',
-      'Улыбка (вправо-влево)',
+      'Улыбка',
       'Длинное задание',
       'Захватывать зубами верхние и нижние губы',
       'Оскалиться',
@@ -358,99 +358,106 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _capturedImage != null
-          ? Stack(
+      body: Stack(
         children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: 3 / 4,
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFB3E5FC), // Голубой фон
-                  borderRadius: BorderRadius.circular(20), // Скругление углов
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: _correctedImageBytes != null
-                      ? Image.memory(
-                    _correctedImageBytes!,
-                    fit: BoxFit.cover,
-                  )
-                      : const Center(child: CircularProgressIndicator()),
-                ),
-              ),
+          Positioned.fill(
+            child: Image.asset(
+              'assets/image/fon8.png',
+              fit: BoxFit.cover,
             ),
           ),
-          Positioned(
-            bottom: 40,
-            left: 20,
-            right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _savePhoto,
-                  icon: const Icon(Icons.check),
-                  label: const Text('Сохранить'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          _capturedImage != null
+              ? Stack(
+            children: [
+              Center(
+                child: AspectRatio(
+                  aspectRatio: 3 / 4,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFB3E5FC),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: _correctedImageBytes != null
+                          ? Image.memory(
+                        _correctedImageBytes!,
+                        fit: BoxFit.cover,
+                      )
+                          : const Center(child: CircularProgressIndicator()),
+                    ),
                   ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: _deletePhoto,
-                  icon: const Icon(Icons.delete),
-                  label: const Text('Удалить'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              Positioned(
+                bottom: 40,
+                left: 20,
+                right: 20,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _savePhoto,
+                      icon: const Icon(Icons.check),
+                      label: const Text('Сохранить'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _deletePhoto,
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Удалить'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
+              : SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                buildUnifiedSelectionButton(),
+                Expanded(
+                  child: Center(
+                    child: _isInitialized && _controller != null
+                        ? AspectRatio(
+                      aspectRatio: 3 / 4,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFB3E5FC),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: CameraPreview(_controller!),
+                        ),
+                      ),
+                    )
+                        : const CircularProgressIndicator(),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: ElevatedButton(
+                    onPressed: _takePicture,
+                    child: const Text('Сделать фото'),
                   ),
                 ),
               ],
             ),
           ),
         ],
-      )
-
-          : SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            buildUnifiedSelectionButton(),
-            Expanded(
-              child: Center(
-                child: _isInitialized && _controller != null
-                    ? AspectRatio(
-                  aspectRatio: 3 / 4,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB3E5FC), // Голубой фон, как в примере
-                      borderRadius: BorderRadius.circular(20), // Скругление углов рамки
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20), // Скругление углов камеры
-                      child: CameraPreview(_controller!),
-                    ),
-                  ),
-                )
-                    : const CircularProgressIndicator(),
-              ),
-            ),
-
-
-
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: ElevatedButton(
-                onPressed: _takePicture,
-                child: const Text('Сделать фото'),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
+
 }

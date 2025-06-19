@@ -69,8 +69,77 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      body: Stack(
+        children: [
+          // Фон на ВСЮ страницу
+          Positioned.fill(
+            child: Image.asset(
+              'assets/image/fon2.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // Содержимое с прокруткой
+          Column(
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                'Привет, $userName!',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ProgressWithPoints(
+                progress: userXp / 100,
+                points: userCoins,
+              ),
+              const SizedBox(height: 20),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                        color: const Color.fromARGB(51, 200, 200, 200),
+                        blurRadius: 5,
+                        spreadRadius: 2),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Image.asset('assets/image/cat1.png', width: 80, height: 80),
+                    Image.asset('assets/image/10.png', width: 120, height: 120),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: openedSections.map((section) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, section['route']!);
+                        },
+                        child:
+                        ExerciseSectionButton(imagePath: section['imagePath']!),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // Навигация поверх фона
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
+        backgroundColor: Colors.transparent, // <== если нужно полупрозрачное
         items: [
           BottomNavigationBarItem(
             icon: Image.asset('assets/image/work.png', width: 30, height: 30),
@@ -95,57 +164,9 @@ class _HomePageState extends State<HomePage> {
           }
         },
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            'Привет, $userName!',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          // Прогресс бар и очки
-          ProgressWithPoints(
-            progress: userXp / 100,
-            points: userCoins, // Передаём значения
-          ),
-          const SizedBox(height: 20),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(color: const Color.fromARGB(51, 200, 200, 200), blurRadius: 5, spreadRadius: 2),
-              ],
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Image.asset('assets/image/cat1.png', width: 80, height: 80),
-                Image.asset('assets/image/10.png', width: 120, height: 120),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: openedSections.map((section) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, section['route']!);
-                    },
-                    child: ExerciseSectionButton(imagePath: section['imagePath']!),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
+
 }
 
 class ExerciseSectionButton extends StatelessWidget {

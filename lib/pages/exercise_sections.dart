@@ -50,55 +50,80 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/image/work.png', width: 40, height: 40),
-            label: 'Упражнения',
+      extendBody: true, // важно, чтобы фон был под навигацией
+      body: Stack(
+        children: [
+          // Фоновое изображение
+          Positioned.fill(
+            child: Image.asset(
+              'assets/image/fon3.png',
+              fit: BoxFit.cover,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/image/home.png', width: 30, height: 30),
-            label: 'Главная',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/image/prof.png', width: 30, height: 30),
-            label: 'Профиль',
+
+
+          // Основное содержимое
+          Column(
+            children: [
+              const SizedBox(height: 40),
+              ProgressWithPoints(
+                progress: userXp / 100,
+                points: userCoins,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: exerciseSections.map((section) {
+                      return GestureDetector(
+                        onTap: () async {
+                          await _saveOpenedSection(section['title']!);
+                          Navigator.pushNamed(context, section['route']!);
+                        },
+                        child: ExerciseSectionButton(imagePath: section['imagePath']!),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+
+              // Навигационная панель
+              BottomNavigationBar(
+                currentIndex: 0,
+                backgroundColor: Colors.transparent, // прозрачный фон
+                // elevation: 0, // можно убрать или оставить
+                items: [
+                  BottomNavigationBarItem(
+                    icon: Image.asset('assets/image/work.png', width: 40, height: 40), // совпадает с первым кодом
+                    label: 'Упражнения',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Image.asset('assets/image/home.png', width: 30, height: 30),
+                    label: 'Главная',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Image.asset('assets/image/prof.png', width: 30, height: 30),
+                    label: 'Профиль',
+                  ),
+                ],
+                onTap: (index) {
+                  if (index == 0) {
+                    Navigator.pushReplacementNamed(context, '/exercise_sections');
+                  } else if (index == 1) {
+                    Navigator.pushReplacementNamed(context, '/home');
+                  } else if (index == 2) {
+                    Navigator.pushReplacementNamed(context, '/profile');
+                  }
+                },
+              ),
+            ],
           ),
         ],
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/exercise_sections');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/home');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/profile');
-          }
-        },
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 40),
-            ProgressWithPoints(
-              progress: userXp / 100,
-              points: userCoins,
-            ),
-            const SizedBox(height: 20),
-            ...exerciseSections.map((section) {
-              return GestureDetector(
-                onTap: () async {
-                  await _saveOpenedSection(section['title']!);
-                  Navigator.pushNamed(context, section['route']!);
-                },
-                child: ExerciseSectionButton(imagePath: section['imagePath']!),
-              );
-            }).toList(),
-          ],
-        ),
       ),
     );
   }
+
+
 }
 
 class ExerciseSectionButton extends StatelessWidget {

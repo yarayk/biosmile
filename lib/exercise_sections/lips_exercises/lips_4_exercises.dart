@@ -31,6 +31,8 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
   int repetitionCount = 0;
   bool smileAboveThreshold = false;
 
+  bool _showCongratsImage = false;
+
   @override
   void initState() {
     super.initState();
@@ -40,8 +42,8 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
 
   Future<void> initializeCamera() async {
     cameras = await availableCameras();
-    final frontCamera = cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.front);
+    final frontCamera =
+    cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.front);
     _cameraController =
         CameraController(frontCamera, ResolutionPreset.low, enableAudio: false);
     await _cameraController!.initialize();
@@ -70,6 +72,19 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
           if (currentSmile >= threshold && !smileAboveThreshold) {
             repetitionCount++;
             smileAboveThreshold = true;
+
+            if (repetitionCount >= 10) {
+              setState(() {
+                _showCongratsImage = true;
+                isTracking = false;
+              });
+
+              Timer(const Duration(seconds: 5), () {
+                if (mounted) {
+                  Navigator.of(context).pushReplacementNamed('/home');
+                }
+              });
+            }
           } else if (currentSmile < threshold && smileAboveThreshold) {
             smileAboveThreshold = false;
           }
@@ -123,13 +138,18 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
   }
 
   void saveMaxSmile() {
-    if (result != null && result!['delta'] != null && result!['delta']['smile_score'] != null) {
+    if (result != null &&
+        result!['delta'] != null &&
+        result!['delta']['smile_score'] != null) {
       setState(() {
         maxSmileScore = result!['delta']['smile_score'];
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Максимальное значение улыбки сохранено.")),
+        const SnackBar(
+          content: Text("Максимальное значение улыбки сохранено."),
+          duration: Duration(seconds: 2),
+        ),
       );
     }
   }
@@ -137,7 +157,10 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
   void startTracking() {
     if (!isBaselineSet) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Сначала выполните калибровку.")),
+        const SnackBar(
+          content: Text("Сначала выполните калибровку."),
+          duration: Duration(seconds: 2),
+        ),
       );
       return;
     }
@@ -146,20 +169,10 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
       isTracking = true;
       repetitionCount = 0;
       smileAboveThreshold = false;
+      _showCongratsImage = false;
     });
 
     _cameraController?.startImageStream(processCameraImage);
-  }
-
-  Widget buildResult() {
-    if (result == null) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        const JsonEncoder.withIndent("  ").convert(result),
-        style: const TextStyle(fontFamily: "monospace", fontSize: 12),
-      ),
-    );
   }
 
   @override
@@ -172,10 +185,18 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
+            // Фон
+            Positioned.fill(
+              child: Image.asset(
+                'assets/image/fon8.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            // Основное содержимое
             Column(
               children: [
                 const SizedBox(height: 8),
@@ -237,7 +258,15 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
                         _cameraController!.value.isInitialized
                         ? ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: CameraPreview(_cameraController!),
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        clipBehavior: Clip.hardEdge,
+                        child: SizedBox(
+                          width: _cameraController!.value.previewSize!.height,
+                          height: _cameraController!.value.previewSize!.width,
+                          child: CameraPreview(_cameraController!),
+                        ),
+                      ),
                     )
                         : const Center(child: CircularProgressIndicator()))
                         : Stack(
@@ -316,44 +345,90 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
                       style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
-                if (_showCamera)
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          ElevatedButton(
-                            onPressed: sendInit,
-                            child: const Text("Калибровка"),
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: saveMaxSmile,
-                            child: const Text("Сохранить максимум"),
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: startTracking,
-                            child: const Text("Старт"),
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                isTracking = false;
-                              });
-                            },
-                            child: const Text("Стоп"),
-                          ),
-                          const SizedBox(height: 16),
-                          buildResult(),
-                        ],
-                      ),
+                if (_showCamera && !_showCongratsImage)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        FloatingActionButton(
+                          heroTag: "init",
+                          backgroundColor: Colors.green,
+                          onPressed: () {
+                            sendInit();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Калибровка выполнена."),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: const Text("😐", style: TextStyle(fontSize: 24)), // <-- Зелёная кнопка
+                        ),
+                        FloatingActionButton(
+                          heroTag: "save",
+                          backgroundColor: Colors.blue,
+                          onPressed: saveMaxSmile,
+                          child: const Text("🙂", style: TextStyle(fontSize: 24)), // <-- Синяя кнопка
+                        ),
+                        FloatingActionButton(
+                          heroTag: "start",
+                          backgroundColor: Colors.orange,
+                          onPressed: () {
+                            startTracking();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Начали!"),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: const Icon(Icons.play_arrow),
+                        ),
+                        FloatingActionButton(
+                          heroTag: "stop",
+                          backgroundColor: Colors.red,
+                          onPressed: () {
+                            setState(() {
+                              isTracking = false;
+                            });
+                          },
+                          child: const Icon(Icons.stop),
+                        ),
+                      ],
                     ),
                   ),
+
+                const SizedBox(height: 12),
               ],
             ),
+
+            if (_showCongratsImage)
+              Container(
+                color: Colors.white.withOpacity(0.9),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/image/happy.png',
+                      width: 200,
+                      height: 200,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Поздравляем!\nУпражнение выполнено.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             Positioned(
               top: 30,
               left: 8,
