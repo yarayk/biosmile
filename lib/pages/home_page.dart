@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../profile_service.dart';
+import '../game_scripts.dart'; // <-- Добавлено для streak
 import 'progress_with_points.dart';
 
 class HomePage extends StatefulWidget {
@@ -10,28 +11,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Map<String, String>> openedSections = [];
-  String userName = '...'; // Имя пользователя
-  int userCoins = 0; // Инициализация значений по умолчанию
+  String userName = '...';
+  int userCoins = 0;
   int userXp = 0;
   int userLevel = 0;
-
-  // Функция для подгрузки имени пользователя
-  Future<void> _loadUserName() async {
-    String? name = await ProfileService().getFirstName();
-    setState(() {
-      userName = name ?? 'Гость';
-    });
-  }
-
-  Future<void> _loadStates() async {
-    List? states = await ProfileService().getStates();
-    setState(() {
-      userCoins = (states?[0] ?? 0) as int; // Обеспечиваем корректное присваивание
-      userXp = (states?[1] ?? 0) as int;
-      userLevel = (states?[2] ?? 0) as int;
-    });
-  }
-
+  int loginStreak = 1; // <-- Новое поле
 
   final List<Map<String, String>> exerciseSections = [
     {'title': 'Упражнения для мимических мышц', 'imagePath': 'assets/image/exercise_face.png', 'route': '/face_exercises'},
@@ -48,6 +32,30 @@ class _HomePageState extends State<HomePage> {
     _loadUserName();
     _loadStates();
     _loadOpenedSections();
+    _loadLoginStreak(); // <-- Новый вызов
+  }
+
+  Future<void> _loadUserName() async {
+    String? name = await ProfileService().getFirstName();
+    setState(() {
+      userName = name ?? 'Гость';
+    });
+  }
+
+  Future<void> _loadStates() async {
+    List? states = await ProfileService().getStates();
+    setState(() {
+      userCoins = (states?[0] ?? 0) as int;
+      userXp = (states?[1] ?? 0) as int;
+      userLevel = (states?[2] ?? 0) as int;
+    });
+  }
+
+  Future<void> _loadLoginStreak() async {
+    int streak = await GamificationService().getLoginStreak();
+    setState(() {
+      loginStreak = streak;
+    });
   }
 
   Future<void> _loadOpenedSections() async {
@@ -72,15 +80,12 @@ class _HomePageState extends State<HomePage> {
       extendBody: true,
       body: Stack(
         children: [
-          // Фон на ВСЮ страницу
           Positioned.fill(
             child: Image.asset(
               'assets/image/fon2.png',
               fit: BoxFit.cover,
             ),
           ),
-
-          // Содержимое с прокруткой
           Column(
             children: [
               const SizedBox(height: 20),
@@ -92,6 +97,7 @@ class _HomePageState extends State<HomePage> {
               ProgressWithPoints(
                 progress: userXp / 100,
                 points: userCoins,
+                streak: loginStreak, // <-- передаём streak
               ),
               const SizedBox(height: 20),
               Container(
@@ -124,8 +130,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           Navigator.pushNamed(context, section['route']!);
                         },
-                        child:
-                        ExerciseSectionButton(imagePath: section['imagePath']!),
+                        child: ExerciseSectionButton(imagePath: section['imagePath']!),
                       );
                     }).toList(),
                   ),
@@ -135,11 +140,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-
-      // Навигация поверх фона
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
-        backgroundColor: Colors.transparent, // <== если нужно полупрозрачное
+        backgroundColor: Colors.transparent,
         items: [
           BottomNavigationBarItem(
             icon: Image.asset('assets/image/work.png', width: 30, height: 30),
@@ -166,7 +169,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }
 
 class ExerciseSectionButton extends StatelessWidget {

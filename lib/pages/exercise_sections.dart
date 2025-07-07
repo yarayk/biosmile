@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../profile_service.dart'; // Убедись, что этот импорт есть
+import '../profile_service.dart';
+import '../game_scripts.dart';
 import 'progress_with_points.dart';
 
 class ExerciseSectionsPage extends StatefulWidget {
@@ -21,11 +22,13 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
   int userCoins = 0;
   int userXp = 0;
   int userLevel = 0;
+  int loginStreak = 1; // Добавлено поле
 
   @override
   void initState() {
     super.initState();
     _loadStates();
+    _loadLoginStreak(); // Загрузка streak
   }
 
   Future<void> _loadStates() async {
@@ -34,6 +37,13 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
       userCoins = (states?[0] ?? 0) as int;
       userXp = (states?[1] ?? 0) as int;
       userLevel = (states?[2] ?? 0) as int;
+    });
+  }
+
+  Future<void> _loadLoginStreak() async {
+    int streak = await GamificationService().getLoginStreak();
+    setState(() {
+      loginStreak = streak;
     });
   }
 
@@ -50,25 +60,22 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true, // важно, чтобы фон был под навигацией
+      extendBody: true,
       body: Stack(
         children: [
-          // Фоновое изображение
           Positioned.fill(
             child: Image.asset(
               'assets/image/fon3.png',
               fit: BoxFit.cover,
             ),
           ),
-
-
-          // Основное содержимое
           Column(
             children: [
               const SizedBox(height: 40),
               ProgressWithPoints(
                 progress: userXp / 100,
                 points: userCoins,
+                streak: loginStreak, // Передаём streak
               ),
               const SizedBox(height: 20),
               Expanded(
@@ -87,14 +94,12 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
                 ),
               ),
 
-              // Навигационная панель
               BottomNavigationBar(
                 currentIndex: 0,
-                backgroundColor: Colors.transparent, // прозрачный фон
-                // elevation: 0, // можно убрать или оставить
+                backgroundColor: Colors.transparent,
                 items: [
                   BottomNavigationBarItem(
-                    icon: Image.asset('assets/image/work.png', width: 40, height: 40), // совпадает с первым кодом
+                    icon: Image.asset('assets/image/work.png', width: 40, height: 40),
                     label: 'Упражнения',
                   ),
                   BottomNavigationBarItem(
@@ -122,8 +127,6 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
       ),
     );
   }
-
-
 }
 
 class ExerciseSectionButton extends StatelessWidget {

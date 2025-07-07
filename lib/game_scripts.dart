@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/material.dart';
 
 class GamificationService {
   final SupabaseClient _client = Supabase.instance.client;
-
 
   /// Вознаграждение за авторизацию: +10 XP и +5 монет
   Future<void> rewardForLogin(BuildContext context) async {
@@ -24,6 +22,20 @@ class GamificationService {
       coinReward: 0,
       message: '+40 XP за регистрацию',
     );
+  }
+
+  /// Получение серии заходов пользователя (login_streak)
+  Future<int> getLoginStreak() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return 1;
+
+    final response = await _client
+        .from('user_metrics')
+        .select('login_streak')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    return response?['login_streak'] ?? 1;
   }
 
   /// Общая функция начисления наград
@@ -75,7 +87,7 @@ class GamificationService {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
     );
