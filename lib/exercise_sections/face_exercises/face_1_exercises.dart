@@ -359,7 +359,7 @@ class _Face1ExercisesState extends State<Face1Exercises> {
                           heroTag: "save",
                           backgroundColor: Colors.blue,
                           onPressed: saveMaxLift,
-                          child: const Text("😮‍", style: TextStyle(fontSize: 24)),
+                          child: const Text("😯", style: TextStyle(fontSize: 24)),
                         ),
                         FloatingActionButton(
                           heroTag: "start",
