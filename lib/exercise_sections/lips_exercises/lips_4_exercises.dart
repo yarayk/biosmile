@@ -102,7 +102,7 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
 
     final jpeg = img.encodeJpg(converted, quality: 50);
     final base64Image = base64Encode(jpeg);
-    final data = jsonEncode({"mode": "track", "image": base64Image});
+    final data = jsonEncode({"mode": "track", "exercise": "lip_4", "image": base64Image});
     channel.sink.add(data);
   }
 
@@ -133,7 +133,7 @@ class _Lips4ExercisesState extends State<Lips4Exercises> {
     final image = await _cameraController!.takePicture();
     final bytes = await image.readAsBytes();
     final base64Image = base64Encode(bytes);
-    final data = jsonEncode({"mode": "init", "image": base64Image});
+    final data = jsonEncode({"mode": "init", "exercise": "lip_4", "image": base64Image});
     channel.sink.add(data);
   }
 

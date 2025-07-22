@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../game_scripts.dart'; // подключи свой сервис
+import 'package:flutter/widgets.dart';
 
 class ProgressWithPoints extends StatefulWidget {
   final double progress; // от 0.0 до 1.0
@@ -37,7 +38,7 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          // Гифка + цифра серии
+
           Stack(
             alignment: Alignment.center,
             children: [
@@ -45,6 +46,10 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
                 padding: const EdgeInsets.only(bottom: 30),
                 child: SizedBox(
                   width: 50,
+                // Поднимаем гифку вверх, уменьшая отступ снизу
+                padding: const EdgeInsets.only(bottom: 30), // ← Поднимает вверх!
+                child: SizedBox(
+                  width: 50, // ← Было 40 — теперь гифка больше
                   height: 50,
                   child: Image.asset(
                     'assets/image/Fire.gif',
@@ -56,6 +61,10 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
                 streak.toString(),
                 style: const TextStyle(
                   fontSize: 20,
+              const Text(
+                '3',
+                style: TextStyle(
+                  fontSize: 20, // Можно чуть увеличить текст тоже
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   shadows: [
@@ -69,8 +78,13 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
               ),
             ],
           ),
+
           const SizedBox(width: 8),
           // Прогресс-бар
+
+          const SizedBox(width: 8),
+
+          // Прогресс-бар с текстом
           Expanded(
             child: Stack(
               alignment: Alignment.center,
@@ -81,7 +95,16 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
                     value: widget.progress,
                     minHeight: 12,
                     backgroundColor: Colors.grey[300],
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                    valueColor:
+                    const AlwaysStoppedAnimation<Color>(Colors.green),
+                  ),
+                ),
+                Text(
+                  '${(progress * 100).toInt()}/100',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
@@ -95,7 +118,9 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
               ],
             ),
           ),
+
           const SizedBox(width: 12),
+
           // Очки
           Row(
             children: [
