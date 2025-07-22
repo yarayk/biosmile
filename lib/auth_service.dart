@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'game_scripts.dart';
+
 /// Сервис для управления авторизацией пользователя
 /// Здесь содержится логика регистрации, входа через Google и авто-перехода при активной сессии
 class AuthService {
@@ -17,21 +17,21 @@ class AuthService {
   }) async {
     try {
       final response = await Supabase.instance.client.auth.signUp(
-          email: email,
-          password: password,
-          data: {
-      'full_name': (lastName + " " + firstName + " " + middleName)
-      },
-    );
+        email: email,
+        password: password,
+        data: {
+          'full_name': (lastName + " " + firstName + " " + middleName)
+        },
+      );
 
       if (response.user != null) {
-        await GamificationService().rewardForSignup(context);
-
+        await updateLoginStreak(); // 👈 ДОБАВЬ ЭТО
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Первый этап регистрации прошёл успешно!\nПожалуйста, подтвердите почту.')),
         );
         return true;
-      } else {
+      }
+      else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
         );
@@ -70,10 +70,10 @@ class AuthService {
       );
 
       if (response.user != null) {
-        await GamificationService().rewardForLogin(context);
-
+        await updateLoginStreak();
         Navigator.pushReplacementNamed(context, '/home');
-      } else {
+      }
+      else {
         _showMessage(context, 'Не удалось войти. Попробуйте ещё раз.');
       }
     } on AuthException catch (e) {
@@ -108,14 +108,13 @@ class AuthService {
 //Возвращает правильный URL в зависимости от платформы
   static String getRedirectUrl() {
     if (kIsWeb) {
-      return 'http://localhost:3000';  // для Web
+      return 'http://localhost:3000';  // веб-редирект
     }
     if (Platform.isAndroid || Platform.isIOS) {
-      return 'smbiosmile://recovery';  // теперь будет использоваться этот URL
+      return 'com.mycompany.biosmile://callback';  // мобильный редирект
     }
-    return 'http://localhost:3000';  // fallback
+    return 'http://localhost:3000';  // fallback для других случаев
   }
-
 
   /// Проверка активной сессии пользователя и редирект на /home
   static void checkUserSession(BuildContext context) {
@@ -132,5 +131,56 @@ class AuthService {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+  /// Обновление login streak в таблице user_metrics
+  static Future<void> updateLoginStreak() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        print('[updateLoginStreak] Пользователь не найден');
+        return;
+      }
+
+      final userId = user.id;
+      final today = DateTime.now().toUtc();
+
+      final response = await Supabase.instance.client
+          .from('user_metrics')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (response == null) {
+        // Первая запись
+        await Supabase.instance.client.from('user_metrics').insert({
+          'user_id': userId,
+          'last_login_at': today.toIso8601String(),
+          'login_streak': 1,
+        });
+        print('[updateLoginStreak] Новая запись создана');
+      } else {
+        final lastLogin = DateTime.parse(response['last_login_at']).toUtc();
+        final streak = response['login_streak'] ?? 1;
+        final diff = today.difference(lastLogin).inDays;
+
+        int newStreak;
+        if (diff == 0) {
+          newStreak = streak;
+        } else if (diff == 1) {
+          newStreak = streak + 1;
+        } else {
+          newStreak = 1;
+        }
+
+        await Supabase.instance.client.from('user_metrics').update({
+          'last_login_at': today.toIso8601String(),
+          'login_streak': newStreak,
+        }).eq('user_id', userId);
+
+        print('[updateLoginStreak] Запись обновлена: streak = $newStreak');
+      }
+    } catch (e) {
+      print('[updateLoginStreak] Ошибка: $e');
+    }
   }
 }
