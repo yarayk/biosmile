@@ -1,0 +1,2 @@
+C:/FlutterProjects/biosmile/biosmile/android/app/.cxx/Debug/l5z6z2n2/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/FlutterProjects/biosmile/biosmile/android/app/.cxx/Debug/l5z6z2n2/armeabi-v7a/CMakeFiles/rebuild_cache.dir
