@@ -43,7 +43,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadStates();
   }
 
-  //Функция для подгрузки имени пользователя
   Future<void> _loadUserName() async {
     String? name = await ProfileService().getFirstName();
     setState(() {
@@ -59,7 +58,6 @@ class _ProfilePageState extends State<ProfilePage> {
       userLevel = (states?[2] ?? 0) as int;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -115,16 +113,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                       children: [
                                         Text(
                                           userName,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 24,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                           ),
                                         ),
-                                        SizedBox(height: 4),
+                                        const SizedBox(height: 4),
                                         Text(
                                           'Уровень $userLevel',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: 18,
                                             color: Colors.white,
                                           ),
@@ -135,6 +133,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ],
                               ),
                             ),
+
+                            // Кот
                             Positioned(
                               bottom: 10,
                               right: 20,
@@ -143,6 +143,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 height: 160,
                               ),
                             ),
+
+                            // Иконка настроек
                             Positioned(
                               top: 10,
                               right: 10,
@@ -151,6 +153,22 @@ class _ProfilePageState extends State<ProfilePage> {
                                 onPressed: () {
                                   Navigator.pushNamed(context, '/settings');
                                 },
+                              ),
+                            ),
+
+                            // Кнопка "Зал славы"
+                            Positioned(
+                              bottom: 10,
+                              left: 10,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/hall');
+                                },
+                                child: Image.asset(
+                                  'assets/image/in_hall.png',
+                                  width: 50,
+                                  height: 50,
+                                ),
                               ),
                             ),
                           ],
@@ -178,28 +196,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 20),
 
-                      // Кнопка "Сделать фото"
+                      // Кнопка "Сделать фото" заменена на картинку
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/photo');
-                            },
-                            icon: const Icon(Icons.camera_alt, color: Colors.white),
-                            label: const Text(
-                              'Сделать фото',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              backgroundColor: Colors.deepPurple,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              elevation: 4,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/photo');
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(30),
+                            child: Image.asset(
+                              'assets/image/sdelat_photo.png',
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
@@ -234,16 +242,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                 color: Colors.lightGreen.shade200,
                                 shape: BoxShape.circle,
                               ),
-                              selectedDecoration: BoxDecoration(
+                              selectedDecoration: const BoxDecoration(
                                 color: Colors.green,
                                 shape: BoxShape.circle,
                               ),
-                              selectedTextStyle: TextStyle(color: Colors.white),
-                              todayTextStyle: TextStyle(color: Colors.white),
-                              weekendTextStyle: TextStyle(color: Colors.grey),
+                              selectedTextStyle: const TextStyle(color: Colors.white),
+                              todayTextStyle: const TextStyle(color: Colors.white),
+                              weekendTextStyle: const TextStyle(color: Colors.grey),
                               defaultTextStyle: TextStyle(color: Colors.grey.shade700),
                             ),
-                            daysOfWeekStyle: DaysOfWeekStyle(
+                            daysOfWeekStyle: const DaysOfWeekStyle(
                               weekdayStyle: TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.bold,
@@ -253,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            headerStyle: HeaderStyle(
+                            headerStyle: const HeaderStyle(
                               titleCentered: true,
                               titleTextStyle: TextStyle(
                                 color: Colors.green,
@@ -309,5 +317,4 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
 }

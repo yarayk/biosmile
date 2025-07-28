@@ -12,6 +12,7 @@ import 'pages/exercise_sections.dart';
 import 'pages/photo_diary_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/Photo.dart';
+import 'pages/hall_of_fame.dart';
 import 'pages/settings_page.dart';
 import 'exercise_sections/tongue_exercises.dart';
 import 'exercise_sections/lips_exercises.dart';
@@ -175,6 +176,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/exercise_sections': (context) => ExerciseSectionsPage(),
         '/profile': (context) => ProfilePage(),
+        '/hall': (context) => HallOfFamePage(),
         '/photo': (context) => CameraExerciseScreen(),
         '/photo_diary': (context) => PhotoDiaryPage(),
         '/settings': (context) => SettingsPage(),
