@@ -147,6 +147,7 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
         _correctedImageBytes!,
         selectedSection!,
         selectedExercise!,
+        context,
       );
 
       final userId = Supabase.instance.client.auth.currentUser?.id;
