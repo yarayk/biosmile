@@ -28,7 +28,7 @@ class GamificationService {
 
   /// Вознаграждение за загрузку фото: +15 XP и +10 монет
   Future<void> applyPhotoReward(BuildContext context) async {
-    await _applyReward(
+    await applyReward(
       context,
       xpReward: 15,
       coinReward: 10,
