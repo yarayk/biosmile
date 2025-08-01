@@ -144,6 +144,7 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
 
     try {
       final url = await PhotoUploadService.uploadPhoto(
+        context,
         _correctedImageBytes!,
         selectedSection!,
         selectedExercise!,
