@@ -2,7 +2,8 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
-import '../game_scripts.dart';
+import '../achievement_service.dart';
+
 
 class PhotoUploadService {
   static final SupabaseClient supabase = Supabase.instance.client;
@@ -10,15 +11,12 @@ class PhotoUploadService {
 
   // Очистка имени для пути
   static String sanitize(String input) {
-    return input.toLowerCase().replaceAll(RegExp(r'[^\w\d_-]'), '_');
+    return input
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\d_-]'), '_');
   }
 
-  static Future<String> uploadPhoto(
-      Uint8List imageBytes,
-      String section,
-      String exercise,
-      BuildContext context,
-      ) async {
+  static Future<String> uploadPhoto(BuildContext context, Uint8List imageBytes, String section, String exercise) async  {
     final String fileName = '${const Uuid().v4()}.jpg';
     final String safeSection = sanitize(section);
     final String safeExercise = sanitize(exercise);
@@ -34,8 +32,11 @@ class PhotoUploadService {
       throw Exception('Ошибка загрузки фото в Supabase Storage');
     }
 
-    //Начисляем награду после загрузки
-    await GamificationService().applyPhotoReward(context);
+    // Проверка достижений после загрузки фото
+    final userId = supabase.auth.currentUser?.id;
+    if (userId != null) {
+      await AchievementService().checkAndAwardAchievements(context, userId);
+    }
 
     return filePath;
   }

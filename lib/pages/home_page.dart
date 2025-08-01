@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../profile_service.dart';
 import 'progress_with_points.dart';
+import '../achievement_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -45,9 +47,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserName();
-    _loadStates();
-    _loadOpenedSections();
+    _initializePage();
+  }
+
+  Future<void> _initializePage() async {
+    await _loadUserName();
+    await _loadStates();
+    await _loadOpenedSections();
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId != null) {
+      await AchievementService().checkAndAwardAchievements(context, userId);
+    }
   }
 
   Future<void> _loadOpenedSections() async {

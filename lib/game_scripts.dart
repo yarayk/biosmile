@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../achievement_service.dart';
+
 
 class GamificationService {
   final SupabaseClient _client = Supabase.instance.client;
 
   /// Вознаграждение за авторизацию: +10 XP и +5 монет
   Future<void> rewardForLogin(BuildContext context) async {
-    await _applyReward(
+    await applyReward(
       context,
       xpReward: 10,
       coinReward: 5,
@@ -16,7 +18,7 @@ class GamificationService {
 
   /// Вознаграждение за регистрацию: +40 XP
   Future<void> rewardForSignup(BuildContext context) async {
-    await _applyReward(
+    await applyReward(
       context,
       xpReward: 40,
       coinReward: 0,
@@ -49,7 +51,7 @@ class GamificationService {
   }
 
   /// Общая функция начисления наград
-  Future<void> _applyReward(
+  Future<void> applyReward(
       BuildContext context, {
         required int xpReward,
         required int coinReward,
@@ -89,6 +91,11 @@ class GamificationService {
       'coins': coins,
       'level': level,
     }).eq('id', userId);
+
+    // Проверка достижений после изменения уровня
+    if (userId != null) {
+      await AchievementService().checkAndAwardAchievements(context, userId);
+    }
 
     _showSnackBar(context, message);
   }
