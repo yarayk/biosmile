@@ -26,6 +26,16 @@ class GamificationService {
     );
   }
 
+  /// Вознаграждение за загрузку фото: +15 XP и +10 монет
+  Future<void> applyPhotoReward(BuildContext context) async {
+    await _applyReward(
+      context,
+      xpReward: 15,
+      coinReward: 10,
+      message: '+15 XP и +10 монет за фото!',
+    );
+  }
+
   /// Получение серии заходов пользователя (login_streak)
   Future<int> getLoginStreak() async {
     final userId = _client.auth.currentUser?.id;
