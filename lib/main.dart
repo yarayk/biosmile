@@ -14,6 +14,7 @@ import 'pages/profile_page.dart';
 import 'pages/Photo.dart';
 import 'pages/hall_of_fame.dart';
 import 'pages/settings_page.dart';
+import 'pages/avatar_settings_page.dart';
 import 'exercise_sections/tongue_exercises.dart';
 import 'exercise_sections/lips_exercises.dart';
 import 'exercise_sections/lips_exercises/lips_1.dart';
@@ -176,6 +177,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomePage(),
         '/exercise_sections': (context) => ExerciseSectionsPage(),
         '/profile': (context) => ProfilePage(),
+        '/avatar': (context) => AvatarSettingsPage(),
         '/hall': (context) => HallOfFamePage(),
         '/photo': (context) => CameraExerciseScreen(),
         '/photo_diary': (context) => PhotoDiaryPage(),
