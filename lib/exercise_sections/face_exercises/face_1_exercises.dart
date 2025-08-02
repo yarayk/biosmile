@@ -396,6 +396,11 @@ class _Face1ExercisesState extends State<Face1Exercises> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Image.asset(
+                      'assets/image/exercise_10_xp.png',
+                      width: 280,
+                    ),
+                    const SizedBox(height: 20),
                     Image.asset('assets/image/happy.png', width: 200, height: 200),
                     const SizedBox(height: 20),
                     const Text(

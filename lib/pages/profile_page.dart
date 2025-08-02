@@ -35,28 +35,25 @@ class _ProfilePageState extends State<ProfilePage> {
   int userCoins = 0;
   int userXp = 0;
   int userLevel = 0;
+  String? avatarUrl; // изначально null
 
   @override
   void initState() {
     super.initState();
-    _loadUserName();
-    _loadStates();
+    _loadProfileData();
   }
 
-  Future<void> _loadUserName() async {
-    String? name = await ProfileService().getFirstName();
-    setState(() {
-      userName = name ?? 'Гость';
-    });
-  }
-
-  Future<void> _loadStates() async {
-    List? states = await ProfileService().getStates();
-    setState(() {
-      userCoins = (states?[0] ?? 0) as int;
-      userXp = (states?[1] ?? 0) as int;
-      userLevel = (states?[2] ?? 0) as int;
-    });
+  Future<void> _loadProfileData() async {
+    final profile = await ProfileService().loadProfileWithAvatar();
+    if (profile != null) {
+      setState(() {
+        userName = profile.firstName;
+        userCoins = profile.coins;
+        userXp = profile.xp;
+        userLevel = profile.level;
+        avatarUrl = profile.avatarUrl;
+      });
+    }
   }
 
   @override
@@ -92,6 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Stack(
+                          clipBehavior: Clip.none,
                           children: [
                             Container(
                               height: 180,
@@ -134,15 +132,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
 
-                            // Кот
-                            Positioned(
-                              bottom: 10,
-                              right: 20,
-                              child: Image.asset(
-                                'assets/image/yelowcat.png',
-                                height: 160,
+                            // Аватар (привязан к низу карточки, увеличен в 1.5 раза)
+                            if (avatarUrl != null)
+                              Positioned(
+                                bottom: -60, // выступает ниже карточки
+                                right: 10,
+                                child: Image.asset(
+                                  avatarUrl!,
+                                  height: 240, // увеличено
+                                ),
                               ),
-                            ),
 
                             // Иконка настроек
                             Positioned(
@@ -175,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 60), // больше отступ после аватарки
 
                       // Фото-дневник
                       Padding(
@@ -196,7 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 20),
 
-                      // Кнопка "Сделать фото" заменена на картинку
+                      // Кнопка "Сделать фото"
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: GestureDetector(
