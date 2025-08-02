@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../profile_service.dart';
 
 final _profileService = ProfileService();
@@ -8,6 +7,7 @@ class SettingsPage extends StatefulWidget {
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
+
 class _SettingsPageState extends State<SettingsPage> {
   final _formKey = GlobalKey<FormState>();
   final _lastNameController = TextEditingController();
@@ -18,22 +18,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _hasChanged = false;
   String? _selectedAvatar;
   String _userId = '123456789';
-
-  // Явное прописывание путей к каждому аватару
-  final List<String> _avatarPaths = [
-    'assets/avatars/avatar_1.png',
-    'assets/avatars/avatar_2.png',
-    'assets/avatars/avatar_3.png',
-    'assets/avatars/avatar_4.png',
-    'assets/avatars/avatar_5.png',
-    'assets/avatars/avatar_6.png',
-    'assets/avatars/avatar_7.png',
-    'assets/avatars/avatar_8.png',
-    'assets/avatars/avatar_9.png',
-    'assets/avatars/avatar_10.png',
-  ];
-
-  bool _isLoading = true; // Флаг для контроля загрузки настроек
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -43,7 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadSettings() async {
     final profile = await _profileService.loadProfileWithAvatar();
-    if (profile != null) {
+    if (profile != null && profile.avatarUrl != null) {
       _lastNameController.text = profile.lastName;
       _firstNameController.text = profile.firstName;
       _middleNameController.text = profile.middleName;
@@ -51,7 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _userId = profile.id;
       _selectedAvatar = profile.avatarUrl;
     }
-
+    // Если profile.avatarUrl == null, не устанавливаем старый аватар
     setState(() => _isLoading = false);
   }
 
@@ -62,38 +47,23 @@ class _SettingsPageState extends State<SettingsPage> {
       middleName: _middleNameController.text.trim(),
       email: _emailController.text.trim(),
       id: _userId,
-      avatarUrl: _selectedAvatar!, coins: 0, xp: 0, level: 0,
+      avatarUrl: _selectedAvatar ?? '',
+      coins: 0,
+      xp: 0,
+      level: 0,
     );
 
     await _profileService.saveProfileData(data);
   }
 
-  void _showAvatarSelectionDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Выберите аватар'),
-        content: Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: _avatarPaths.map((avatar) {
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedAvatar = avatar;
-                  _hasChanged = true;
-                });
-                Navigator.pop(context);
-              },
-              child: CircleAvatar(
-                backgroundImage: AssetImage(avatar),
-                radius: 30,
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
+  Future<void> _navigateToAvatarSelection() async {
+    final selected = await Navigator.pushNamed(context, '/avatar');
+    if (selected != null && selected is String) {
+      setState(() {
+        _selectedAvatar = selected;
+        _hasChanged = true;
+      });
+    }
   }
 
   void _confirmLogout() {
@@ -102,10 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) => AlertDialog(
         content: Text('Вы уверены, что хотите выйти из аккаунта?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Нет'),
-          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text('Нет')),
           TextButton(
             onPressed: () {
               Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
@@ -140,11 +107,11 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Прозрачный Scaffold
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.white.withOpacity(0.8),
           leading: IconButton(
-            icon: Icon(Icons.subdirectory_arrow_left_rounded, color: Colors.orange),
+            icon: Icon(Icons.arrow_back_ios, color: Colors.orange),
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text('Настройки', style: TextStyle(color: Colors.black)),
@@ -171,7 +138,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton(
-                    onPressed: _showAvatarSelectionDialog,
+                    onPressed: _navigateToAvatarSelection,
                     child: Text('Изменить аватар', style: TextStyle(color: Colors.green)),
                   ),
                 ),
@@ -181,7 +148,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       : CircleAvatar(
                     backgroundColor: Colors.yellow,
                     radius: 40,
-                    backgroundImage: AssetImage(_selectedAvatar!),
+                    backgroundImage: _selectedAvatar != null
+                        ? AssetImage(_selectedAvatar!)
+                        : null,
                   ),
                 ),
                 SizedBox(height: 16),
@@ -192,7 +161,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 _styledTextField('Отчество', _middleNameController),
                 SizedBox(height: 12),
                 _styledTextField('Электронная почта', _emailController),
-                SizedBox(height: 12),
                 SizedBox(height: 16),
                 Text('ID Пользователя: $_userId', style: TextStyle(color: Colors.grey)),
                 Align(
@@ -228,5 +196,5 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
-
 }
+
