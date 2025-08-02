@@ -395,6 +395,11 @@ class _Face2ExercisesState extends State<Face2Exercises> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Image.asset(
+                      'assets/image/exercise_10_xp.png',
+                      width: 280,
+                    ),
+                    const SizedBox(height: 20),
                     Image.asset('assets/image/happy.png', width: 200, height: 200),
                     const SizedBox(height: 20),
                     const Text(
@@ -405,6 +410,7 @@ class _Face2ExercisesState extends State<Face2Exercises> {
                   ],
                 ),
               ),
+
             Positioned(
               top: 30,
               left: 8,

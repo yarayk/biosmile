@@ -28,17 +28,17 @@ class AchievementService {
 
     if (loginCount >= 3 && !unlocked.contains('novice')) {
       await _unlockAchievement(userId, 'novice');
-      _showPopup(context, 'Новичок', 'Вы заходили в приложение 3 раза!', 'assets/image/achieve_novice.png', 100);
+      _showPopup(context, 'Новичок', 'Вы заходили в приложение 3 раза!', 'assets/image/novice.png', 100);
     }
 
     if (photoCount >= 5 && !unlocked.contains('photographer')) {
       await _unlockAchievement(userId, 'photographer');
-      _showPopup(context, 'Фотограф', 'Вы загрузили 5 фотографий!', 'assets/image/achieve_photographer.png', 150);
+      _showPopup(context, 'Фотограф', 'Вы загрузили 5 фотографий!', 'assets/image/photographer.png', 150);
     }
 
     if (level >= 5 && !unlocked.contains('master')) {
       await _unlockAchievement(userId, 'master');
-      _showPopup(context, 'Мастер упражнений', 'Вы достигли 5 уровня!', 'assets/image/achieve_master.png', 200);
+      _showPopup(context, 'Мастер упражнений', 'Вы достигли 5 уровня!', 'assets/image/master.png', 200);
     }
   }
 

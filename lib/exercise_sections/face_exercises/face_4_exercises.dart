@@ -434,6 +434,11 @@ class _Face4ExercisesState extends State<Face4Exercises> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
+                      'assets/image/exercise_10_xp.png', // добавлен баннер
+                      width: 280,
+                    ),
+                    const SizedBox(height: 20),
+                    Image.asset(
                       'assets/image/happy.png',
                       width: 200,
                       height: 200,

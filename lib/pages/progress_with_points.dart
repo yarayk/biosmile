@@ -33,21 +33,25 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
 
   @override
   Widget build(BuildContext context) {
+    String fireImage = streak > 2
+        ? 'assets/image/fire_yellow.png'
+        : 'assets/image/fire_grey.png';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          // Гифка + цифра серии
+          // Огненная иконка + цифра серии
           Stack(
             alignment: Alignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.only(bottom: 30),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: SizedBox(
-                  width: 50,
-                  height: 50,
+                  width: 33,
+                  height: 33,
                   child: Image.asset(
-                    'assets/image/Fire.gif',
+                    fireImage,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -96,16 +100,20 @@ class _ProgressWithPointsState extends State<ProgressWithPoints> {
             ),
           ),
           const SizedBox(width: 12),
-          // Очки
+          // Очки с иконкой рыбы
           Row(
             children: [
-              const Icon(Icons.favorite, color: Colors.pink, size: 20),
+              Image.asset(
+                'assets/image/fish.png',
+                width: 20,
+                height: 20,
+              ),
               const SizedBox(width: 4),
               Text(
                 widget.points.toString(),
                 style: const TextStyle(
                   fontSize: 16,
-                  color: Colors.pink,
+                  color: Colors.amber,
                   fontWeight: FontWeight.bold,
                 ),
               ),
