@@ -24,6 +24,28 @@ class GamificationService {
       coinReward: 0,
       message: '+40 XP за регистрацию',
     );
+
+    // Проверка login streak = 5
+    final userId = _client.auth.currentUser?.id;
+    if (userId != null) {
+      final response = await _client
+          .from('user_metrics')
+          .select('login_streak')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      final streak = response?['login_streak'] ?? 1;
+
+      if (streak == 5) {
+        // Бонус за 5 дней серии
+        await applyReward(
+          context,
+          xpReward: 15,
+          coinReward: 15,
+          message: 'Ура! Ты достиг 5 дней подряд! +15 XP и +15 монет',
+        );
+      }
+    }
   }
 
   /// Вознаграждение за загрузку фото: +15 XP и +10 монет
@@ -71,11 +93,10 @@ class GamificationService {
     int xp = response['xp'] ?? 0;
     int coins = response['coins'] ?? 0;
     int level = response['level'] ?? 1;
-
+    final int previousLevel = level;
     xp += xpReward;
     coins += coinReward;
 
-    // Простая логика повышения уровня
     while (xp >= 100) {
       xp -= 100;
       coins += 50 * level;
@@ -92,11 +113,11 @@ class GamificationService {
       'level': level,
     }).eq('id', userId);
 
-    // Проверка достижений после изменения уровня
-    if (userId != null) {
-      await AchievementService().checkAndAwardAchievements(context, userId);
+    if (level > previousLevel) {
+      _showSnackBar(context, 'Ты достиг уровня $level! Получи X монет');
     }
 
+    await AchievementService().checkAndAwardAchievements(context, userId);
     _showSnackBar(context, message);
   }
 
