@@ -1,4 +1,4 @@
-import 'package:untitled2/exercise_sections/additional_exercises.dart';
+import 'package:untitled2/exercise_sections/additional_exercises.dart' hide AdditionalExercisesPage;
 import 'pages/auth_signin_widget.dart';
 import 'pages/auth_signup_widget.dart';
 import 'pages/terms_of_service_page.dart';
