@@ -21,19 +21,19 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadUserName() async {
     String? name = await ProfileService().getFirstName();
     setState(() {
-      userName = name ?? 'Гость';
+      // Убираем fallback на "Гость" — если имя не загрузилось, показываем "..."
+      userName = name ?? 'Пользователь';
     });
   }
 
   Future<void> _loadStates() async {
     List? states = await ProfileService().getStates();
     setState(() {
-      userCoins = (states?[0] ?? 0) as int; // Обеспечиваем корректное присваивание
+      userCoins = (states?[0] ?? 0) as int;
       userXp = (states?[1] ?? 0) as int;
       userLevel = (states?[2] ?? 0) as int;
     });
   }
-
 
   final List<Map<String, String>> exerciseSections = [
     {'title': 'Упражнения для мимических мышц', 'imagePath': 'assets/image/exercise_face.png', 'route': '/face_exercises'},
@@ -47,7 +47,25 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _initializePage();
+    _checkAuthAndInitialize();
+  }
+
+  /// ГЛАВНАЯ ПРОВЕРКА: если пользователь не авторизован, выкидываем на страницу входа
+  Future<void> _checkAuthAndInitialize() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    final session = Supabase.instance.client.auth.currentSession;
+
+    // Если нет пользователя ИЛИ нет сессии — значит, пользователь НЕ авторизован
+    if (user == null || session == null) {
+      // Перенаправляем на страницу входа
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/');
+      });
+      return;
+    }
+
+    // Если пользователь авторизован — загружаем данные
+    await _initializePage();
   }
 
   Future<void> _initializePage() async {
@@ -150,7 +168,7 @@ class _HomePageState extends State<HomePage> {
       // Навигация поверх фона
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
-        backgroundColor: Colors.transparent, // <== если нужно полупрозрачное
+        backgroundColor: Colors.transparent,
         items: [
           BottomNavigationBarItem(
             icon: Image.asset('assets/image/work.png', width: 30, height: 30),
@@ -177,7 +195,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }
 
 class ExerciseSectionButton extends StatelessWidget {

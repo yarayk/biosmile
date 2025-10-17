@@ -118,7 +118,7 @@ class _AuthSignInWidgetState extends State<AuthSignInWidget> {
             SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: () {
-                AuthService.signInWithGoogle(context);
+                //AuthService.signInWithGoogle(context);
               },
               style: OutlinedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
