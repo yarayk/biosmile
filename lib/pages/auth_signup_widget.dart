@@ -256,7 +256,7 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
                   return;
                 }
 
-                // 🚀 Регистрация + переход если успех
+                // Регистрация + переход если успех
                 final success = await AuthService.signUp(
                   context: context,
                   email: email,
@@ -288,7 +288,7 @@ class _AuthSignUpWidgetState extends State<AuthSignUpWidget> {
             SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: () {
-                AuthService.signInWithGoogle(context);
+                //AuthService.signInWithGoogle(context);
               },
               style: OutlinedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),

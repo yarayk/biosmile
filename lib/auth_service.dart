@@ -1,14 +1,16 @@
+// Сервис для управления авторизацией пользователя в приложении на Flutter + Supabase.
+// Содержит регистрацию по email, вход по email и базовую проверку активной сессии.
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import '../achievement_service.dart';
 
-
 /// Сервис для управления авторизацией пользователя
-/// Здесь содержится логика регистрации, входа через Google и авто-перехода при активной сессии
+/// - Регистрация по email/паролю
+/// - Вход по email/паролю
+/// - Проверка активной сессии и редирект
 class AuthService {
-  /// Регистрация пользователя по email и паролю
+  /// Регистрация пользователя по email и паролю.
   static Future<bool> signUp({
     required BuildContext context,
     required String email,
@@ -27,13 +29,18 @@ class AuthService {
       );
 
       if (response.user != null) {
-        await updateLoginMetrics();
+        // Обновляем метрики только если реально есть сессия
+        if (response.session != null || Supabase.instance.client.auth.currentUser != null) {
+          await updateLoginMetrics();
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Первый этап регистрации прошёл успешно!\nПожалуйста, подтвердите почту.')),
+          const SnackBar(
+            content: Text('Первый этап регистрации прошёл успешно!\nПожалуйста, подтвердите почту.'),
+          ),
         );
         return true;
-      }
-      else {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Не удалось зарегистрироваться. Попробуйте позже.')),
         );
@@ -58,8 +65,7 @@ class AuthService {
     }
   }
 
-
-  /// Вход по email и паролю
+  /// Вход по email и паролю.
   static Future<void> signInWithEmail({
     required BuildContext context,
     required String email,
@@ -71,18 +77,23 @@ class AuthService {
         password: password,
       );
 
-      if (response.user != null) {
+      // Проверка. Вход только при реальной session и совпадении email.
+      if (response.session != null && response.user?.email == email) {
         await updateLoginMetrics();
+
         final userId = Supabase.instance.client.auth.currentUser?.id;
         if (userId != null) {
           await AchievementService().checkAndAwardAchievements(context, userId);
         }
+
         Navigator.pushReplacementNamed(context, '/home');
-      }
-      else {
-        _showMessage(context, 'Не удалось войти. Попробуйте ещё раз.');
+      } else {
+        // Если вход не удался, принудительно разлогиниваем, чтобы не задерживалась гостевая/сброшенная сессия!
+        await Supabase.instance.client.auth.signOut();
+        _showMessage(context, 'Не удалось войти. Неверный email или пароль.');
       }
     } on AuthException catch (e) {
+      await Supabase.instance.client.auth.signOut(); // всегда разлогиниваем после ошибки
       if (e.message.contains('Invalid login credentials') ||
           e.message.contains('Invalid email or password')) {
         _showMessage(context, 'Неверный email или пароль');
@@ -90,39 +101,13 @@ class AuthService {
         _showMessage(context, 'Ошибка входа: ${e.message}');
       }
     } catch (e) {
+      await Supabase.instance.client.auth.signOut();
       _showMessage(context, 'Неизвестная ошибка: ${e.toString()}');
     }
   }
 
-  /// Вход через Google с помощью Supabase OAuth
-  static Future<void> signInWithGoogle(BuildContext context) async {
-    try {
-      final redirectUrl = getRedirectUrl();
-
-      await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: redirectUrl,
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка входа через Google: ${e.toString()}')),
-      );
-    }
-  }
-
-
-//Возвращает правильный URL в зависимости от платформы
-  static String getRedirectUrl() {
-    if (kIsWeb) {
-      return 'http://localhost:3000';  // веб-редирект
-    }
-    if (Platform.isAndroid || Platform.isIOS) {
-      return 'com.mycompany.biosmile://callback';  // мобильный редирект
-    }
-    return 'http://localhost:3000';  // fallback для других случаев
-  }
-
-  /// Проверка активной сессии пользователя и редирект на /home
+  /// Проверка активной сессии пользователя и редирект на /home.
+  /// Полезно при старте приложения, когда пользователь уже был авторизован ранее.
   static void checkUserSession(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
@@ -132,13 +117,17 @@ class AuthService {
     }
   }
 
-  /// Показывает Snackbar
+  /// Показывает Snackbar.
   static void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
-  /// Обновление login streak в таблице user_metrics
+
+  /// Обновление login streak в таблице user_metrics.
+  /// Логика:
+  /// - Если записи нет — создаём с начальными значениями.
+  /// - Если есть — обновляем last_login_at, streak (сбрасываем, если перерыв > 1 дня) и счётчик входов одного дня.
   static Future<void> updateLoginMetrics() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
