@@ -1,2 +1,0 @@
-D:/PROGA/untitled2/android/app/.cxx/Debug/4n39f141/armeabi-v7a/CMakeFiles/edit_cache.dir
-D:/PROGA/untitled2/android/app/.cxx/Debug/4n39f141/armeabi-v7a/CMakeFiles/rebuild_cache.dir
