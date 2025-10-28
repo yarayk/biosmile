@@ -1,4 +1,5 @@
 import 'package:untitled2/exercise_sections/additional_exercises.dart';
+import 'pages/welcome_page.dart';
 import 'pages/auth_signin_widget.dart';
 import 'pages/auth_signup_widget.dart';
 import 'pages/terms_of_service_page.dart';
@@ -164,8 +165,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/',
+      initialRoute: '/welcome',
       routes: {
+        '/welcome': (context) => const WelcomePage(),
         '/': (context) => AuthSignInWidget(),
         '/signup': (context) => AuthSignUpWidget(),
         '/terms': (context) => TermsOfServicePage(),

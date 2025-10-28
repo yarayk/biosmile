@@ -41,6 +41,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.19.0
+  flutter_svg: ^2.2.0
   # зависимость БД
   supabase_flutter: ^2.8.4
   # The following adds the Cupertino Icons font to your application.
@@ -57,7 +58,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -65,6 +71,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/image/
+    - assets/newimage/
     - assets/avatars/
 
   # The following line ensures that the Material Icons font is
