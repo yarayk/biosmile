@@ -86,7 +86,6 @@ class AuthService {
           await AchievementService().checkAndAwardAchievements(context, userId);
         }
 
-        Navigator.pushReplacementNamed(context, '/home');
       } else {
         // Если вход не удался, принудительно разлогиниваем, чтобы не задерживалась гостевая/сброшенная сессия!
         await Supabase.instance.client.auth.signOut();
