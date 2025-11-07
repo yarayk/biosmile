@@ -1,212 +1,188 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../profile_service.dart';
-import 'progress_with_points.dart';
-import '../achievement_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:untitled2/widget/streak_card.dart';
+import 'package:untitled2/widget/task_card_initial.dart';
+import 'package:untitled2/widget/task_card_modal.dart';
+import 'package:untitled2/widget/task_card_tasks.dart';
+import 'package:untitled2/widget/tabbar.dart';
+// Импорт блока ежедневного подарка
+import 'package:untitled2/widget/daily_gift_block.dart';
+
+enum TaskCardState { initial, modal, tasks }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, String>> openedSections = [];
-  String userName = '...'; // Имя пользователя
-  int userCoins = 0; // Инициализация значений по умолчанию
-  int userXp = 0;
-  int userLevel = 0;
-
-  // Функция для подгрузки имени пользователя
-  Future<void> _loadUserName() async {
-    String? name = await ProfileService().getFirstName();
-    setState(() {
-      // Убираем fallback на "Гость" — если имя не загрузилось, показываем "..."
-      userName = name ?? 'Пользователь';
-    });
-  }
-
-  Future<void> _loadStates() async {
-    List? states = await ProfileService().getStates();
-    setState(() {
-      userCoins = (states?[0] ?? 0) as int;
-      userXp = (states?[1] ?? 0) as int;
-      userLevel = (states?[2] ?? 0) as int;
-    });
-  }
-
-  final List<Map<String, String>> exerciseSections = [
-    {'title': 'Упражнения для мимических мышц', 'imagePath': 'assets/image/exercise_face.png', 'route': '/face_exercises'},
-    {'title': 'Упражнения для щек', 'imagePath': 'assets/image/exercise_cheeks.png', 'route': '/cheeks_exercises'},
-    {'title': 'Упражнения для нижней челюсти', 'imagePath': 'assets/image/exercise_jaw.png', 'route': '/jaw_exercises'},
-    {'title': 'Упражнения для губ', 'imagePath': 'assets/image/exercise_lips.png', 'route': '/lips_exercises'},
-    {'title': 'Упражнения для языка', 'imagePath': 'assets/image/exercise_tongue.png', 'route': '/tongue_exercises'},
-    {'title': 'Дополнительные упражнения', 'imagePath': 'assets/image/exercise_additional.png', 'route': '/additional_exercises'},
+  int selectedTabIndex = 0;
+  final List<String> routes = [
+    '/home',
+    '/exercise_sections',
+    '/photo_diary',
+    '/profile',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthAndInitialize();
-  }
+  List<int> iconStates01 = [1, 0, 0, 0];
+  TaskCardState cardState = TaskCardState.initial;
+  List<String> tasks = ['Упражнение #1', 'Упражнение #2', 'Упражнение #3'];
 
-  /// ГЛАВНАЯ ПРОВЕРКА: если пользователь не авторизован, выкидываем на страницу входа
-  Future<void> _checkAuthAndInitialize() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    final session = Supabase.instance.client.auth.currentSession;
-
-    // Если нет пользователя ИЛИ нет сессии — значит, пользователь НЕ авторизован
-    if (user == null || session == null) {
-      // Перенаправляем на страницу входа
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacementNamed(context, '/');
-      });
-      return;
-    }
-
-    // Если пользователь авторизован — загружаем данные
-    await _initializePage();
-  }
-
-  Future<void> _initializePage() async {
-    await _loadUserName();
-    await _loadStates();
-    await _loadOpenedSections();
-
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId != null) {
-      await AchievementService().checkAndAwardAchievements(context, userId);
-    }
-  }
-
-  Future<void> _loadOpenedSections() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> openedTitles = prefs.getStringList('opened_sections') ?? [];
-
-    if (openedTitles.length > 2) {
-      openedTitles = openedTitles.sublist(openedTitles.length - 2);
-      await prefs.setStringList('opened_sections', openedTitles);
-    }
-
+  void _onTabSelected(int index) {
     setState(() {
-      openedSections = exerciseSections
-          .where((section) => openedTitles.contains(section['title']))
-          .toList();
+      selectedTabIndex = index;
+    });
+
+    if (ModalRoute.of(context)?.settings.name != routes[index]) {
+      Navigator.of(context).pushNamed(routes[index]);
+    }
+  }
+
+  void _openCreateTaskModal() {
+    setState(() {
+      cardState = TaskCardState.modal;
+    });
+  }
+
+  void _addTask(String text) {
+    setState(() {
+      if (text.trim().isNotEmpty) {
+        tasks.add(text.trim());
+        cardState = TaskCardState.tasks;
+      }
+    });
+  }
+
+  void _closeTaskModal() {
+    setState(() {
+      cardState = TaskCardState.initial;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
-      body: Stack(
-        children: [
-          // Фон на ВСЮ страницу
-          Positioned.fill(
-            child: Image.asset(
-              'assets/image/fon2.png',
-              fit: BoxFit.cover,
-            ),
-          ),
+      backgroundColor: const Color(0xFFF9F9F9),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final double screenW = constraints.maxWidth;
+          const double baseW = 375.0;
+          final double scale = (screenW / baseW).clamp(0.85, 1.25);
 
-          // Содержимое с прокруткой
-          Column(
-            children: [
-              const SizedBox(height: 20),
-              Text(
-                'Привет, $userName!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ProgressWithPoints(
-                progress: userXp / 100,
-                points: userCoins,
-              ),
-              const SizedBox(height: 20),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                        color: const Color.fromARGB(51, 200, 200, 200),
-                        blurRadius: 5,
-                        spreadRadius: 2),
-                  ],
+          Widget baseTaskCardWidget;
+          if (cardState == TaskCardState.tasks) {
+            baseTaskCardWidget = TaskCardTasks(tasks: tasks);
+          } else {
+            baseTaskCardWidget =
+                TaskCardInitial(onCreateTask: _openCreateTaskModal);
+          }
+
+          final double cardH = 236 * scale;
+          Widget cardWrapper(Widget child) => Container(
+            height: cardH,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24 * scale),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.07),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image.asset('assets/image/cat1.png', width: 80, height: 80),
-                    Image.asset('assets/image/10.png', width: 120, height: 120),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: openedSections.map((section) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, section['route']!);
-                        },
-                        child:
-                        ExerciseSectionButton(imagePath: section['imagePath']!),
-                      );
-                    }).toList(),
+              ],
+            ),
+            child: child,
+          );
+
+          final listChildren = <Widget>[
+            cardWrapper(const StreakCard()),
+            const SizedBox(width: 8),
+            cardWrapper(baseTaskCardWidget),
+          ];
+
+          final cardsBlock = Padding(
+            padding: EdgeInsets.only(top: 12 * scale),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: cardH,
+                  width: screenW,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none, // Не обрезать тени!
+                    padding: EdgeInsets.symmetric(horizontal: 16.0 * scale),
+                    physics: const BouncingScrollPhysics(),
+                    children: listChildren,
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
+                SizedBox(height: 8 * scale), // 8 px от низа карточек до надписи
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0 * scale),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Свайпни вправо чтобы увидеть еще задачи',
+                        style: TextStyle(
+                          fontFamily: 'SF Pro',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 12,
+                          height: 1.0,
+                          letterSpacing: 0,
+                          color: Color(0xFF777777),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Image.asset(
+                        "assets/newimage/arrow.png",
+                        width: 12,
+                        height: 14,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
 
-      // Навигация поверх фона
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        backgroundColor: Colors.transparent,
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/image/work.png', width: 30, height: 30),
-            label: 'Упражнения',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/image/home.png', width: 40, height: 40),
-            label: 'Главная',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/image/prof.png', width: 30, height: 30),
-            label: 'Профиль',
-          ),
-        ],
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/exercise_sections');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/home');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/profile');
-          }
+          return Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    cardsBlock,
+                    SizedBox(height: 8 * scale),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0 * scale),
+                      child: const DailyGiftBlock(),
+                    ),
+                    const Expanded(child: SizedBox()),
+                  ],
+                ),
+              ),
+              if (cardState == TaskCardState.modal)
+                Positioned.fill(
+                  child: TaskCardModal(
+                    onAddTask: (text) {
+                      _addTask(text);
+                    },
+                    onClose: _closeTaskModal,
+                  ),
+                ),
+            ],
+          );
         },
       ),
-    );
-  }
-}
-
-class ExerciseSectionButton extends StatelessWidget {
-  final String imagePath;
-
-  const ExerciseSectionButton({required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Image.asset(imagePath, fit: BoxFit.cover),
+      bottomNavigationBar: AbsorbPointer(
+        absorbing: cardState == TaskCardState.modal,
+        child: MainTabBar(
+          iconStates01: iconStates01,
+          selectedIndex: selectedTabIndex,
+          onTabSelected: _onTabSelected,
+        ),
+      ),
     );
   }
 }

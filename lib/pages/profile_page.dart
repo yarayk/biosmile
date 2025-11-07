@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
 import '../profile_service.dart';
 import 'progress_with_points.dart';
+import 'package:untitled2/widget/tabbar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       locale: const Locale('ru', 'RU'),
       debugShowCheckedModeBanner: false,
-      home: ProfilePage(),
+      home: const ProfilePage(),
     );
   }
 }
@@ -29,13 +31,36 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  // Таббар: та же конфигурация, что и в HomePage
+  int selectedTabIndex = 3; // 0:/home, 1:/exercise_sections, 2:/photo_diary, 3:/profile
+  final List<String> routes = const [
+    '/home',
+    '/exercise_sections',
+    '/photo_diary',
+    '/profile',
+  ];
+
+  List<int> iconStates01 = [0, 0, 0, 1];
+
+  void _onTabSelected(int index) {
+    setState(() {
+      selectedTabIndex = index;
+      // Можно сделать динамическую подсветку так:
+      // iconStates01 = List.generate(4, (i) => i == index ? 1 : 0);
+    });
+    final current = ModalRoute.of(context)?.settings.name;
+    if (current != routes[index]) {
+      Navigator.of(context).pushNamed(routes[index]);
+    }
+  }
+
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   String userName = '...';
   int userCoins = 0;
   int userXp = 0;
   int userLevel = 0;
-  String? avatarUrl; // изначально null
+  String? avatarUrl;
 
   @override
   void initState() {
@@ -59,17 +84,15 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // фон и контент оставлены без изменений
       body: Stack(
         children: [
-          // Фон
           Positioned.fill(
             child: Image.asset(
               'assets/image/fon8.png',
               fit: BoxFit.cover,
             ),
           ),
-
-          // Основное содержимое
           Column(
             children: [
               Expanded(
@@ -85,7 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Жёлтая карточка профиля
+                      // Карточка профиля
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Stack(
@@ -132,14 +155,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
 
-                            // Аватар (привязан к низу карточки, увеличен в 1.5 раза)
+                            // Аватар
                             if (avatarUrl != null)
                               Positioned(
-                                bottom: -60, // выступает ниже карточки
+                                bottom: -60,
                                 right: 10,
                                 child: Image.asset(
                                   avatarUrl!,
-                                  height: 240, // увеличено
+                                  height: 240,
                                 ),
                               ),
 
@@ -174,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
 
-                      const SizedBox(height: 60), // больше отступ после аватарки
+                      const SizedBox(height: 60),
 
                       // Фото-дневник
                       Padding(
@@ -281,38 +304,16 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-
-              // Навигационная панель
-              BottomNavigationBar(
-                currentIndex: 2,
-                backgroundColor: Colors.transparent,
-                items: [
-                  BottomNavigationBarItem(
-                    icon: Image.asset('assets/image/work.png', width: 30, height: 30),
-                    label: 'Упражнения',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Image.asset('assets/image/home.png', width: 30, height: 30),
-                    label: 'Главная',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Image.asset('assets/image/prof.png', width: 40, height: 40),
-                    label: 'Профиль',
-                  ),
-                ],
-                onTap: (index) {
-                  if (index == 0) {
-                    Navigator.pushReplacementNamed(context, '/exercise_sections');
-                  } else if (index == 1) {
-                    Navigator.pushReplacementNamed(context, '/home');
-                  } else if (index == 2) {
-                    Navigator.pushReplacementNamed(context, '/profile');
-                  }
-                },
-              ),
             ],
           ),
         ],
+      ),
+
+      // Единый таббар как на главной
+      bottomNavigationBar: MainTabBar(
+        iconStates01: iconStates01,
+        selectedIndex: selectedTabIndex,
+        onTabSelected: _onTabSelected,
       ),
     );
   }
