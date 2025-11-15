@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 class GiftDayItem {
   final String assetName;
-  final String state; // "claimed", "claim", "waiting"
+  final String state;
   final String label;
-
   GiftDayItem({
     required this.assetName,
     required this.state,
@@ -14,12 +13,23 @@ class GiftDayItem {
 
 class DailyGiftBlock extends StatefulWidget {
   const DailyGiftBlock({super.key});
-
   @override
   State<DailyGiftBlock> createState() => _DailyGiftBlockState();
 }
 
 class _DailyGiftBlockState extends State<DailyGiftBlock> {
+  int achievementState = 2;
+  String achievementTitle = 'На шаг ближе к цели';
+  String achievementSubtitle = 'Выполни своё первое упражнение';
+
+  final String achImageGray = 'assets/newimage/reward_gray.png';
+  final String achImageBright = 'assets/newimage/reward_bright.png';
+  final String achImageNextGray = 'assets/newimage/day7.png';
+  final String coinIcon20 = 'assets/newimage/coin_20.png';
+  final int rewardCoins = 200;
+  int progressCurrent = 0;
+  int progressTotal = 1;
+
   List<GiftDayItem> items = [
     GiftDayItem(assetName: 'assets/newimage/gift01.png', state: 'claimed', label: 'Получено'),
     GiftDayItem(assetName: 'assets/newimage/gift01.png', state: 'claimed', label: 'Получено'),
@@ -40,39 +50,40 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
     });
   }
 
-  // Тень у кнопки "Забрать" теперь как у "День 5"
+  void _onTapClaimReward() {
+    setState(() {
+      achievementState = 1;
+      achievementTitle = 'На шаг ближе к цели';
+      achievementSubtitle = 'Выполни 7 заходов';
+      progressCurrent = 0;
+      progressTotal = 7;
+    });
+  }
+
   Widget _claimLabel(String text, double scale, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 20 * scale, // соответствует height: 20px
-        width: 56 * scale,  // соответствует width: 56px
+        height: 20 * scale,
+        width: 56 * scale,
         decoration: BoxDecoration(
-          color: const Color(0xFF81C784), // background: #81C784
-          borderRadius: BorderRadius.circular(2112), // border-radius: 2112px
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15), // box-shadow: rgba(0,0,0,0.15)
-              offset: Offset(0, 2 * scale), // 0px 2px
-              blurRadius: 12 * scale, // 12px
-            ),
-          ],
+          color: const Color(0xFF81C784),
+          borderRadius: BorderRadius.circular(2112),
         ),
         alignment: Alignment.center,
         child: Text(
           text,
           style: TextStyle(
-            fontFamily: 'SF Pro Display', // font-family
-            fontWeight: FontWeight.w400,  // font-weight: 400
-            fontSize: 12 * scale,         // font-size: 12px
-            height: 14 / 12,              // line-height: 14px => 14/12
-            color: Colors.white,          // color: #FFFFFF
+            fontFamily: 'SF Pro Display',
+            fontWeight: FontWeight.w400,
+            fontSize: 12 * scale,
+            height: 14 / 12,
+            color: Colors.white,
           ),
         ),
       ),
     );
   }
-
 
   Widget _waitingLabel(String text, double scale) {
     return Container(
@@ -81,13 +92,6 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(2112),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.10),
-            offset: Offset(0, 2 * scale),
-            blurRadius: 12 * scale,
-          ),
-        ],
       ),
       alignment: Alignment.center,
       child: Text(
@@ -97,7 +101,7 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
           fontWeight: FontWeight.w400,
           fontSize: 12 * scale,
           height: 1.0,
-          color: Color(0xFF81C784),
+          color: const Color(0xFF81C784),
         ),
       ),
     );
@@ -118,9 +122,183 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
           fontFamily: 'SF Pro Display',
           fontWeight: FontWeight.w400,
           fontSize: 12 * scale,
-          color: Color(0xFF81C784),
+          color: const Color(0xFF81C784),
         ),
       ),
+    );
+  }
+
+  Widget _progressBar({
+    required double scale,
+    required int current,
+    required int total,
+  }) {
+    final double width = 219 * scale;
+    final double height = 23 * scale;
+    final double ratio = total > 0 ? (current / total).clamp(0.0, 1.0) : 0.0;
+    final double fillWidth = width * ratio;
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2F2F2),
+        borderRadius: BorderRadius.circular(2112),
+      ),
+      alignment: Alignment.centerLeft,
+      child: Stack(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            width: fillWidth,
+            height: height,
+            decoration: BoxDecoration(
+              color: const Color(0xFF81C784),
+              borderRadius: BorderRadius.circular(56),
+            ),
+          ),
+          Positioned.fill(
+            child: Center(
+              child: Text(
+                '$current/$total',
+                style: TextStyle(
+                  fontFamily: 'SF Pro Display',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14 * scale,
+                  height: 17 / 14,
+                  color: const Color(0xFF777777),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _claimRewardButton(double scale) {
+    return GestureDetector(
+      onTap: _onTapClaimReward,
+      child: Container(
+        width: 219 * scale,
+        height: 23 * scale,
+        decoration: BoxDecoration(
+          color: const Color(0xFF81C784),
+          borderRadius: BorderRadius.circular(56),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          'Забрать награду',
+          style: TextStyle(
+            fontFamily: 'SF Pro Display',
+            fontWeight: FontWeight.w400,
+            fontSize: 14 * scale,
+            height: 17 / 14,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _rewardChip(double scale) {
+    return Container(
+      height: 20 * scale,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2F2F2),
+        borderRadius: BorderRadius.circular(2112),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 5 * scale),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            coinIcon20,
+            width: 20 * scale,
+            height: 20 * scale,
+            fit: BoxFit.cover,
+          ),
+          SizedBox(width: 4 * scale),
+          Text(
+            '+$rewardCoins',
+            style: TextStyle(
+              fontFamily: 'SF Pro Display',
+              fontWeight: FontWeight.w400,
+              fontSize: 14 * scale,
+              height: 17 / 14,
+              color: const Color(0xFF81C784),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _achievementBlock(double scale) {
+    if (achievementState == 0) return const SizedBox.shrink();
+    final String leftImage =
+    achievementState == 2 ? achImageBright : achImageGray;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 88 * scale,
+          height: 98 * scale,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16 * scale),
+            child: Image.asset(leftImage, fit: BoxFit.cover),
+          ),
+        ),
+        SizedBox(width: 16 * scale),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      achievementTitle,
+                      style: TextStyle(
+                        fontFamily: 'SF Pro Display',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14 * scale,
+                        height: 17 / 14,
+                        color: const Color(0xFF191919),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8 * scale),
+                  _rewardChip(scale),
+                ],
+              ),
+              SizedBox(height: 4 * scale),
+              Text(
+                achievementSubtitle,
+                style: TextStyle(
+                  fontFamily: 'SF Pro Display',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 12 * scale,
+                  height: 14 / 12,
+                  color: const Color(0xFF777777),
+                ),
+              ),
+              SizedBox(height: 8 * scale),
+              if (achievementState == 2)
+                _claimRewardButton(scale)
+              else
+                _progressBar(
+                  scale: scale,
+                  current: progressCurrent,
+                  total: progressTotal,
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -133,66 +311,80 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
         final double scale = (screenW / baseW).clamp(0.85, 1.25);
 
         final double itemIcon = 52 * scale;
-        final double itemGap = 8;
+        final double itemGap = 8 * scale;
         final double itemBar = 20 * scale;
         final double rowHeight = itemIcon + itemGap + itemBar;
+        final double achHeight = (achievementState == 0) ? 0 : (98 * scale);
+        final double totalHeight = achHeight + ((achievementState == 0) ? 0 : (8 * scale)) +
+            rowHeight + 16 + 16;
 
-        return Container(
-          height: 210 * scale,
-          padding: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(26 * scale),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            height: totalHeight,
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 16,
+              right: 16,
+              bottom: 16,
+            ), // паддинг по бокам 16 и сверху/снизу 16
             color: Colors.white,
-            borderRadius: BorderRadius.circular(26 * scale),
-          ),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              height: rowHeight,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                padding: EdgeInsets.symmetric(horizontal: 16.0 * scale),
-                separatorBuilder: (context, i) => SizedBox(width: 12 * scale),
-                itemCount: items.length,
-                itemBuilder: (context, i) {
-                  final item = items[i];
-                  return SizedBox(
-                    width: 65 * scale,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 52 * scale,
-                          height: 52 * scale,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(1000),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (achievementState != 0)
+                    _achievementBlock(scale),
+                  if (achievementState != 0)
+                    SizedBox(height: 8 * scale),
+                  SizedBox(
+                    height: rowHeight,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      clipBehavior: Clip.hardEdge,
+                      padding: EdgeInsets.symmetric(horizontal: 16.0 * scale),
+                      separatorBuilder: (context, i) =>
+                          SizedBox(width: 12 * scale),
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final item = items[i];
+                        return SizedBox(
+                          width: 65 * scale,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                width: 52 * scale,
+                                height: 52 * scale,
+                                child: ClipOval(
+                                  clipBehavior: Clip.antiAlias,
+                                  child: Image.asset(
+                                    item.assetName,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 8 * scale),
+                              if (item.state == 'waiting')
+                                _waitingLabel(item.label, scale)
+                              else if (item.state == 'claim')
+                                _claimLabel(
+                                  item.label,
+                                  scale,
+                                      () => _claim(i),
+                                )
+                              else
+                                _claimedLabel(item.label, scale),
+                            ],
                           ),
-                          child: Image.asset(
-                            item.assetName,
-                            width: 52 * scale,
-                            height: 52 * scale,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                        SizedBox(height: itemGap),
-                        if (item.state == 'waiting')
-                          _waitingLabel(item.label, scale)
-                        else if (item.state == 'claim')
-                          _claimLabel(
-                            item.label,
-                            scale,
-                                () => _claim(i),
-                          )
-                        else // claimed
-                          _claimedLabel(
-                            item.label,
-                            scale,
-                          ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
           ),
