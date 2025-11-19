@@ -4,6 +4,38 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../achievement_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Записать сегодняшний вход (для закрашивания точки недели)
+Future<void> markLoginForTodayLocal() async {
+  final prefs = await SharedPreferences.getInstance();
+  final today = DateTime.now();
+  final weekYear = "${today.year}-${weekNumber(today)}";
+  final key = "login_days_$weekYear";
+  List<String> days = prefs.getStringList(key) ?? [];
+  final todayWeekday = today.weekday.toString(); // 1=Пн, ... 7=Вс
+  if (!days.contains(todayWeekday)) {
+    days.add(todayWeekday);
+    await prefs.setStringList(key, days);
+  }
+}
+
+// Получить дни захода за текущую неделю
+Future<List<int>> getLoginDaysForThisWeek() async {
+  final prefs = await SharedPreferences.getInstance();
+  final today = DateTime.now();
+  final weekYear = "${today.year}-${weekNumber(today)}";
+  final key = "login_days_$weekYear";
+  List<String> days = prefs.getStringList(key) ?? [];
+  return days.map((x) => int.tryParse(x) ?? 0).where((x) => x > 0).toList();
+}
+
+// Получение номера недели
+int weekNumber(DateTime date) {
+  final first = DateTime(date.year, 1, 1);
+  return ((date.difference(first).inDays + first.weekday - 1) / 7).floor() + 1;
+}
+
 
 /// Сервис для управления авторизацией пользователя
 /// - Регистрация по email/паролю
@@ -32,6 +64,7 @@ class AuthService {
         // Обновляем метрики только если реально есть сессия
         if (response.session != null || Supabase.instance.client.auth.currentUser != null) {
           await updateLoginMetrics();
+          await markLoginForTodayLocal();
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -77,22 +110,22 @@ class AuthService {
         password: password,
       );
 
-      // Проверка. Вход только при реальной session и совпадении email.
+      // Проверка — вход только при реальной session и совпадении email.
       if (response.session != null && response.user?.email == email) {
         await updateLoginMetrics();
-
+        await markLoginForTodayLocal();
+        // Даем базе Supabase гарантированно сохранить streak перед переходом
+        await Future.delayed(const Duration(milliseconds: 400));
         final userId = Supabase.instance.client.auth.currentUser?.id;
         if (userId != null) {
           await AchievementService().checkAndAwardAchievements(context, userId);
         }
-
       } else {
-        // Если вход не удался, принудительно разлогиниваем, чтобы не задерживалась гостевая/сброшенная сессия!
         await Supabase.instance.client.auth.signOut();
         _showMessage(context, 'Не удалось войти. Неверный email или пароль.');
       }
     } on AuthException catch (e) {
-      await Supabase.instance.client.auth.signOut(); // всегда разлогиниваем после ошибки
+      await Supabase.instance.client.auth.signOut();
       if (e.message.contains('Invalid login credentials') ||
           e.message.contains('Invalid email or password')) {
         _showMessage(context, 'Неверный email или пароль');
@@ -104,7 +137,6 @@ class AuthService {
       _showMessage(context, 'Неизвестная ошибка: ${e.toString()}');
     }
   }
-
   /// Проверка активной сессии пользователя и редирект на /home.
   /// Полезно при старте приложения, когда пользователь уже был авторизован ранее.
   static void checkUserSession(BuildContext context) {
