@@ -1,5 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../game_scripts.dart';
+
+// --- Новый метод локального чтения дней недели ---
+Future<List<int>> getLoginDaysForThisWeek() async {
+  final prefs = await SharedPreferences.getInstance();
+  final today = DateTime.now();
+  final weekYear = "${today.year}-${weekNumber(today)}";
+  final key = "login_days_$weekYear";
+  List<String> days = prefs.getStringList(key) ?? [];
+  return days.map((x) => int.tryParse(x) ?? 0).where((x) => x > 0).toList();
+}
+
+int weekNumber(DateTime date) {
+  final first = DateTime(date.year, 1, 1);
+  return ((date.difference(first).inDays + first.weekday - 1) / 7).floor() + 1;
+}
+// -------------------------------------------------
 
 class StreakCard extends StatefulWidget {
   final double width;
@@ -38,32 +55,58 @@ class StreakCard extends StatefulWidget {
 }
 
 class _StreakCardState extends State<StreakCard> {
-  int streak = 1;
+  int? streak;           // null по умолчанию, ничего не мерцает
+  bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadStreak();
+    _reloadStreak();
   }
 
-  Future<void> _loadStreak() async {
+  Future<void> _reloadStreak() async {
+    setState(() {
+      loading = true;
+      streak = null;
+    });
     final fetchedStreak = await GamificationService().getLoginStreak();
-    if (mounted) {
-      setState(() => streak = fetchedStreak);
-    }
+    if (!mounted) return;
+    setState(() {
+      streak = fetchedStreak;
+      loading = false;
+    });
+    // Повторный fetch можно оставить, только если streak реально обновился (например, база подтянулась чуть позже)
+    Future.delayed(const Duration(milliseconds: 400), () async {
+      final freshStreak = await GamificationService().getLoginStreak();
+      if (mounted && streak != freshStreak) {
+        setState(() => streak = freshStreak);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isLit = streak > widget.litThreshold;
+    // Показываем лоадер пока данных вообще нет (чтобы не было "старых" данных!)
+    if (streak == null || loading) {
+      return Center(
+        child: Container(
+          width: widget.width,
+          height: widget.height,
+          alignment: Alignment.center,
+          child: const CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final bool showBorder = streak! > 1; // Только если streak > 1 показываем рамку
+    final bool isLit = streak! > widget.litThreshold;
     final String fireImage = isLit ? widget.litAsset : widget.dimAsset;
-    final int activeDots = streak.clamp(0, widget.totalDots);
 
     return Container(
       width: widget.width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(23),
-        border: isLit
+        border: showBorder
             ? Border.all(width: 4, color: widget.cardBorderColor)
             : null,
         color: Colors.white,
@@ -167,23 +210,28 @@ class _StreakCardState extends State<StreakCard> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(widget.totalDots, (i) {
-                  final bool on = i < activeDots;
-                  return Container(
-                    margin: EdgeInsets.only(
-                        right: i == widget.totalDots - 1 ? 0 : 4),
-                    width: 9,
-                    height: 9,
-                    decoration: BoxDecoration(
-                      color: on
-                          ? widget.activeDotColor
-                          : widget.inactiveDotColor,
-                      borderRadius: BorderRadius.circular(64),
-                    ),
+              // ---- ЗАКРАШИВАНИЕ КРУГЛЯШКОВ ПО ДНЯМ НЕДЕЛИ ----
+              FutureBuilder<List<int>>(
+                future: getLoginDaysForThisWeek(),
+                builder: (context, snapshot) {
+                  final days = snapshot.data ?? [];
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(widget.totalDots, (i) {
+                      final dayNum = i + 1; // Пн=1 ... Вс=7
+                      final on = days.contains(dayNum);
+                      return Container(
+                        margin: EdgeInsets.only(right: i == widget.totalDots - 1 ? 0 : 4),
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: on ? widget.activeDotColor : widget.inactiveDotColor,
+                          borderRadius: BorderRadius.circular(64),
+                        ),
+                      );
+                    }),
                   );
-                }),
+                },
               ),
             ],
           ),
