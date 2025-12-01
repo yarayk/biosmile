@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
     '/home',
     '/exercise_sections',
     '/photo_diary',
-    '/profile',
+    '/profile_first',
   ];
 
   List<int> iconStates01 = [1, 0, 0, 0];

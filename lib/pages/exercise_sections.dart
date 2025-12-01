@@ -57,7 +57,7 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
     '/home',
     '/exercise_sections',
     '/photo_diary',
-    '/profile',
+    '/profile_first',
   ];
 
   // Массив фиксированных состояний иконок таббара (можно менять!)

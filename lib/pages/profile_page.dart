@@ -37,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
     '/home',
     '/exercise_sections',
     '/photo_diary',
-    '/profile',
+    '/profile_first',
   ];
 
   List<int> iconStates01 = [0, 0, 0, 1];
