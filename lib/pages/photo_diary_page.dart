@@ -15,7 +15,7 @@ class _PhotoDiaryPageState extends State<PhotoDiaryPage> {
     '/home',
     '/exercise_sections',
     '/photo_diary',
-    '/profile',
+    '/profile_first',
   ];
 
   // Фиксированные состояния иконок таббара!

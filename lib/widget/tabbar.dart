@@ -46,7 +46,7 @@ class MainTabBar extends StatelessWidget {
       title: 'Профиль',
       icon: 'assets/newimage/profile.png',
       iconActive: 'assets/newimage/profile_green.png',
-      route: '/profile',
+      route: '/profile_first',
     ),
   ];
 

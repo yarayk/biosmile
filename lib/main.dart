@@ -16,6 +16,7 @@ import 'pages/Photo.dart';
 import 'pages/hall_of_fame.dart';
 import 'pages/settings_page.dart';
 import 'pages/avatar_settings_page.dart';
+import 'pages/profile_first.dart';
 import 'exercise_sections/tongue_exercises.dart';
 import 'exercise_sections/lips_exercises.dart';
 import 'exercise_sections/lips_exercises/lips_1.dart';
@@ -168,6 +169,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/welcome',
       routes: {
         '/welcome': (context) => const WelcomePage(),
+        '/profile_first': (context) => const ProfileFirst(),
         '/': (context) => AuthSignInWidget(),
         '/signup': (context) => AuthSignUpWidget(),
         '/terms': (context) => TermsOfServicePage(),
