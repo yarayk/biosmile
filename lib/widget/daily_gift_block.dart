@@ -4,6 +4,7 @@ class GiftDayItem {
   final String assetName;
   final String state;
   final String label;
+
   GiftDayItem({
     required this.assetName,
     required this.state,
@@ -13,6 +14,7 @@ class GiftDayItem {
 
 class DailyGiftBlock extends StatefulWidget {
   const DailyGiftBlock({super.key});
+
   @override
   State<DailyGiftBlock> createState() => _DailyGiftBlockState();
 }
@@ -26,6 +28,7 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
   final String achImageBright = 'assets/newimage/reward_bright.png';
   final String achImageNextGray = 'assets/newimage/day7.png';
   final String coinIcon20 = 'assets/newimage/coin_20.png';
+
   final int rewardCoins = 200;
   int progressCurrent = 0;
   int progressTotal = 1;
@@ -236,8 +239,8 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
 
   Widget _achievementBlock(double scale) {
     if (achievementState == 0) return const SizedBox.shrink();
-    final String leftImage =
-    achievementState == 2 ? achImageBright : achImageGray;
+
+    final String leftImage = achievementState == 2 ? achImageBright : achImageGray;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -315,8 +318,7 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
         final double itemBar = 20 * scale;
         final double rowHeight = itemIcon + itemGap + itemBar;
         final double achHeight = (achievementState == 0) ? 0 : (98 * scale);
-        final double totalHeight = achHeight + ((achievementState == 0) ? 0 : (8 * scale)) +
-            rowHeight + 16 + 16;
+        final double totalHeight = achHeight + ((achievementState == 0) ? 0 : (8 * scale)) + rowHeight + 16 + 16;
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(26 * scale),
@@ -328,25 +330,22 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
               left: 16,
               right: 16,
               bottom: 16,
-            ), // паддинг по бокам 16 и сверху/снизу 16
+            ),
             color: Colors.white,
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (achievementState != 0)
-                    _achievementBlock(scale),
-                  if (achievementState != 0)
-                    SizedBox(height: 8 * scale),
+                  if (achievementState != 0) _achievementBlock(scale),
+                  if (achievementState != 0) SizedBox(height: 8 * scale),
                   SizedBox(
                     height: rowHeight,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       clipBehavior: Clip.hardEdge,
                       padding: EdgeInsets.symmetric(horizontal: 16.0 * scale),
-                      separatorBuilder: (context, i) =>
-                          SizedBox(width: 12 * scale),
+                      separatorBuilder: (context, i) => SizedBox(width: 12 * scale),
                       itemCount: items.length,
                       itemBuilder: (context, i) {
                         final item = items[i];
@@ -356,15 +355,13 @@ class _DailyGiftBlockState extends State<DailyGiftBlock> {
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
+                              // УБРАНО скругление: больше нет ClipOval
                               SizedBox(
                                 width: 52 * scale,
                                 height: 52 * scale,
-                                child: ClipOval(
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Image.asset(
-                                    item.assetName,
-                                    fit: BoxFit.cover,
-                                  ),
+                                child: Image.asset(
+                                  item.assetName,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                               SizedBox(height: 8 * scale),

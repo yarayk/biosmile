@@ -10,6 +10,7 @@ class Face15 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Произноси “Т”, “П”, “Р”, “У”',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_15_exercises',
     );
   }

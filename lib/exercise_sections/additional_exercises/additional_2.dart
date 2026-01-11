@@ -10,6 +10,7 @@ class Additional2 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Дополнительные упражнения',
       exerciseTitle: 'Брать с ладони мелкие куски яблока',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/additional_2_exercises',
     );
   }

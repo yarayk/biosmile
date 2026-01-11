@@ -10,6 +10,7 @@ class Tongue5 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для языка',
       exerciseTitle: 'Облизать губы по кругу',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/tongue_5_exercises',
     );
   }

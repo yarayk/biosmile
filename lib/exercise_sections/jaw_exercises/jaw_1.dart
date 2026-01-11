@@ -8,8 +8,9 @@ class Jaw1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ExerciseTemplate(
-      categoryTitle: 'Упражнения для нижней челюсти',
+      categoryTitle: 'Упражнения длячелюсти',
       exerciseTitle: 'Рот приоткрыть, широко открыть, плотно закрыть',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/jaw_1_exercises',
     );
   }

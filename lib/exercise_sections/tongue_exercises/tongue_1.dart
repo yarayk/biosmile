@@ -10,6 +10,7 @@ class Tongue1 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для языка',
       exerciseTitle: 'Открыть рот, язык поднять, опустить',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/tongue_1_exercises',
     );
   }

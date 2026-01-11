@@ -10,6 +10,7 @@ class Jaw2 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для нижней челюсти',
       exerciseTitle: 'Движения нижней челюстью вперед, назад, вправо, влево, круговые движения',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/jaw_2_exercises',
     );
   }

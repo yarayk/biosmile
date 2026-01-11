@@ -10,6 +10,7 @@ class Jaw3 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для нижней челюсти',
       exerciseTitle: 'Имитация жевания с открытым/ закрытым ртом',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/jaw_3_exercises',
     );
   }

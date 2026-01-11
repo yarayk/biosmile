@@ -10,6 +10,7 @@ class Lips3 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для губ',
       exerciseTitle: 'Трубочка-улыбочка поочередно',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/lips_3_exercises',
     );
   }

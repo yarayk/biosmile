@@ -10,6 +10,7 @@ class Additional4 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Дополнительные упражнения',
       exerciseTitle: 'Длинное задание',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/additional_4_exercises',
     );
   }

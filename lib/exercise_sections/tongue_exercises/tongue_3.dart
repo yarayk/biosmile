@@ -10,6 +10,7 @@ class Tongue3 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для языка',
       exerciseTitle: 'Рот открыть, язык к правому уху, к левому',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/tongue_3_exercises',
     );
   }

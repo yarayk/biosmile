@@ -10,6 +10,7 @@ class Face9 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Раздуй ноздри, шевелий носом. Втягивай ноздри',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_9_exercises',
     );
   }

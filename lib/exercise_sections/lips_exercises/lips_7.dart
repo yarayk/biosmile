@@ -10,6 +10,7 @@ class Lips7 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для губ',
       exerciseTitle: 'Оскалиться',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/lips_7_exercises',
     );
   }

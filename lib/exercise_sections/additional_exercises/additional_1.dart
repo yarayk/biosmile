@@ -10,6 +10,7 @@ class Additional1 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Дополнительные упражнения',
       exerciseTitle: 'Поцокать, как лошадка',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/additional_1_exercises',
     );
   }
