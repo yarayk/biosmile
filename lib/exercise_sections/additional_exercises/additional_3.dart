@@ -10,6 +10,7 @@ class Additional3 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Дополнительные упражнения',
       exerciseTitle: 'Вибрация губ (фыркать)',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/additional_3_exercises',
     );
   }

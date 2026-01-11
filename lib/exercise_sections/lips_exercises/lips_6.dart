@@ -10,6 +10,7 @@ class Lips6 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для губ',
       exerciseTitle: 'Захватывать зубами верхние и нижние губы',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/lips_6_exercises',
     );
   }

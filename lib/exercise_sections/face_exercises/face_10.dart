@@ -10,6 +10,7 @@ class Face10 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Звук "М"',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_10_exercises',
     );
   }

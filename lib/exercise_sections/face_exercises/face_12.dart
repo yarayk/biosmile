@@ -10,6 +10,7 @@ class Face12 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Плевать',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_12_exercises',
     );
   }

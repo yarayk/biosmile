@@ -10,6 +10,7 @@ class Cheeks4 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для щёк',
       exerciseTitle: 'Чередовать 1 и 2 задание',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/cheeks_4_exercises',
     );
   }

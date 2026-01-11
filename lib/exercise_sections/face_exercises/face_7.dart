@@ -10,6 +10,7 @@ class Face7 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Поочерёдно закрывай левый и правый глаз',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_7_exercises',
     );
   }

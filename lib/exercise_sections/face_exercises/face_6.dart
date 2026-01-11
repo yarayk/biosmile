@@ -10,6 +10,7 @@ class Face6 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Прищуривайся, подтягивая нижнее веко',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_6_exercises',
     );
   }

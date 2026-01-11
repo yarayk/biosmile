@@ -10,6 +10,7 @@ class Tongue6 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для языка',
       exerciseTitle: 'Языком погладить твердое небо',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/tongue_6_exercises',
     );
   }

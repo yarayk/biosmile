@@ -10,6 +10,7 @@ class Face13 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Звук "У", "А"',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_13_exercises',
     );
   }

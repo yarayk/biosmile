@@ -10,6 +10,7 @@ class Tongue4 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для языка',
       exerciseTitle: 'Облизать нижнюю, затем верхнюю губу',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/tongue_4_exercises',
     );
   }

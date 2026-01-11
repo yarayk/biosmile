@@ -10,6 +10,7 @@ class Face5 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Двигай глазным яблоком, закрыв глаза',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_5_exercises',
     );
   }

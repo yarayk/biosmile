@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:untitled2/exercise_sections/exercise_template.dart';
 
-
 class Face4 extends StatelessWidget {
   const Face4({super.key});
 
@@ -9,7 +8,8 @@ class Face4 extends StatelessWidget {
   Widget build(BuildContext context) {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
-      exerciseTitle: 'Поморгай',
+      exerciseTitle: 'Поморгать',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_4_exercises',
     );
   }

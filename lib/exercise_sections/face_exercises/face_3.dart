@@ -10,6 +10,7 @@ class Face3 extends StatelessWidget {
     return const ExerciseTemplate(
       categoryTitle: 'Упражнения для мимических мышц',
       exerciseTitle: 'Закрой глаза (Крепко-Слабо)',
+      exerciseGoal: 'Тренировка мышц век, увлажнение роговицы, улучшение координации.',
       navigationRoute: '/face_3_exercises',
     );
   }
