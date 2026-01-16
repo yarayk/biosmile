@@ -18,8 +18,8 @@ class Face4Exercises extends StatefulWidget {
 
 class _Face4ExercisesState extends State<Face4Exercises> {
   bool _showCamera = false;
-  bool _isChecked = false;
-  final int minBlinkDurationMs = 100; // минимум 100 мс закрытия — чтобы исключить шум
+
+  final int minBlinkDurationMs = 100; // как в старом коде (не используется)
 
   DateTime? eyesClosedAt;
   DateTime? eyesOpenedAt;
@@ -27,11 +27,10 @@ class _Face4ExercisesState extends State<Face4Exercises> {
   final int requiredClosedDuration = 500; // миллисекунд
   final int requiredOpenedDuration = 500;
 
-
-
   CameraController? _cameraController;
   late WebSocketChannel channel;
   Timer? _throttleTimer;
+
   String serverJsonOutput = '';
 
   Map<String, dynamic>? result;
@@ -39,9 +38,15 @@ class _Face4ExercisesState extends State<Face4Exercises> {
   bool isBaselineSet = false;
   double maxBlinkScore = 0;
   int repetitionCount = 0;
-  bool blinkAboveThreshold = false;
+  bool blinkAboveThreshold = false; // как в старом коде (не используется)
 
   bool _showCongratsImage = false;
+
+  static const int _targetReps = 10;
+  static const double _headerHeight = 118;
+
+  static const Color _bg = Color(0xFFF9F9F9);
+  static const Color _green = Color(0xFF81C784);
 
   @override
   void initState() {
@@ -52,8 +57,9 @@ class _Face4ExercisesState extends State<Face4Exercises> {
 
   Future<void> initializeCamera() async {
     cameras = await availableCameras();
-    final frontCamera =
-    cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.front);
+    final frontCamera = cameras.firstWhere(
+          (camera) => camera.lensDirection == CameraLensDirection.front,
+    );
     _cameraController =
         CameraController(frontCamera, ResolutionPreset.low, enableAudio: false);
     await _cameraController!.initialize();
@@ -61,12 +67,14 @@ class _Face4ExercisesState extends State<Face4Exercises> {
   }
 
   void connectWebSocket() {
-    const serverUrl = "ws://82.202.137.138:8000/ws"; // адаптируй при необходимости
+    const serverUrl = "ws://82.202.137.138:8000/ws";
     channel = WebSocketChannel.connect(Uri.parse(serverUrl));
 
     channel.stream.listen((message) {
       final decoded = json.decode(message);
-      print('SERVER JSON: $decoded');
+      // print('SERVER JSON: $decoded'); // оставляй если нужно
+
+      if (!mounted) return;
 
       setState(() {
         result = decoded;
@@ -77,12 +85,19 @@ class _Face4ExercisesState extends State<Face4Exercises> {
       if (status == "baseline_set") {
         isBaselineSet = true;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Калибровка завершена."), duration: Duration(seconds: 2)),
+          const SnackBar(
+            content: Text("Калибровка завершена."),
+            duration: Duration(seconds: 2),
+          ),
         );
       }
-      // функция для моргания
+
+      // функция для моргания — логика как в старом коде
       if (status == "tracking" && decoded["delta"] != null) {
-        double currentBlink = decoded["delta"]["blink_score"] ?? 0.0;
+        final delta = decoded["delta"];
+        final rawBlink = (delta is Map) ? delta["blink_score"] : null;
+        final double currentBlink =
+            (rawBlink as num?)?.toDouble() ?? 0.0; // фикс num->double [web:87]
 
         if (!isBaselineSet) return;
 
@@ -91,7 +106,7 @@ class _Face4ExercisesState extends State<Face4Exercises> {
           return;
         }
 
-        double threshold = maxBlinkScore * 0.8;
+        final double threshold = maxBlinkScore * 0.8;
         final now = DateTime.now();
 
         if (currentBlink >= threshold) {
@@ -103,17 +118,19 @@ class _Face4ExercisesState extends State<Face4Exercises> {
 
           // Проверим, что глаза были открыты перед этим достаточно долго
           if (eyesOpenedAt != null &&
-              now.difference(eyesOpenedAt!).inMilliseconds >= requiredOpenedDuration &&
+              now.difference(eyesOpenedAt!).inMilliseconds >=
+                  requiredOpenedDuration &&
               eyesClosedAt != null &&
-              now.difference(eyesClosedAt!).inMilliseconds >= requiredClosedDuration) {
+              now.difference(eyesClosedAt!).inMilliseconds >=
+                  requiredClosedDuration) {
             // Считаем моргание
             repetitionCount++;
             eyesOpenedAt = null;
             eyesClosedAt = now; // обновим заново
 
-            print("✅ Засчитано моргание: $repetitionCount");
+            // print("✅ Засчитано моргание: $repetitionCount");
 
-            if (repetitionCount >= 10) {
+            if (repetitionCount >= _targetReps) {
               setState(() {
                 _showCongratsImage = true;
                 isTracking = false;
@@ -134,9 +151,6 @@ class _Face4ExercisesState extends State<Face4Exercises> {
           }
         }
       }
-
-
-
     });
   }
 
@@ -149,7 +163,8 @@ class _Face4ExercisesState extends State<Face4Exercises> {
 
     final jpeg = img.encodeJpg(converted, quality: 50);
     final base64Image = base64Encode(jpeg);
-    final data = jsonEncode({"mode": "track", "exercise": "face_4", "image": base64Image});
+    final data =
+    jsonEncode({"mode": "track", "exercise": "face_4", "image": base64Image});
     channel.sink.add(data);
   }
 
@@ -168,22 +183,29 @@ class _Face4ExercisesState extends State<Face4Exercises> {
         buffer[i * 3 + 2] = y;
       }
 
-      return img.Image.fromBytes(width: width, height: height, bytes: buffer.buffer, numChannels: 3);
-    } catch (e) {
+      return img.Image.fromBytes(
+        width: width,
+        height: height,
+        bytes: buffer.buffer,
+        numChannels: 3,
+      );
+    } catch (_) {
       return null;
     }
   }
 
   void sendInit() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) return;
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      return;
+    }
 
     final image = await _cameraController!.takePicture();
     final bytes = await image.readAsBytes();
     final base64Image = base64Encode(bytes);
-    final data = jsonEncode({"mode": "init", "exercise": "face_4", "image": base64Image});
+    final data =
+    jsonEncode({"mode": "init", "exercise": "face_4", "image": base64Image});
     channel.sink.add(data);
   }
-
 
   void startTracking() {
     if (!isBaselineSet) {
@@ -208,146 +230,109 @@ class _Face4ExercisesState extends State<Face4Exercises> {
 
   @override
   void dispose() {
+    _throttleTimer?.cancel();
     _cameraController?.dispose();
     channel.sink.close();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Фон
-            Positioned.fill(
-              child: Image.asset(
-                'assets/image/fon8.png',
-                fit: BoxFit.cover,
-              ),
-            ),
+  Widget _topHeader(BuildContext context) {
+    final progress =
+        (repetitionCount.clamp(0, _targetReps)) / _targetReps.toDouble();
 
-            // Основное содержимое
-            Column(
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      height: _headerHeight,
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: _headerHeight,
+          child: Center(
+            child: Wrap(
+              direction: Axis.horizontal,
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.end,
+              runAlignment: WrapAlignment.center,
+              spacing: 16,
+              runSpacing: 18,
               children: [
-                const SizedBox(height: 8),
-                const Text(
-                  'Упражнения для мимических мышц',
-                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text.rich(
-                    TextSpan(
+                SizedBox(
+                  width: 343,
+                  height: 34,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const TextSpan(text: 'Инструкция ', style: TextStyle(color: Colors.purple)),
-                        TextSpan(
-                          text: 'Выполнение',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
-                            decoration: TextDecoration.underline,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Поморгай',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 40),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 3),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green, width: 2),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$repetitionCount / 10',
-                      style: const TextStyle(
-                          color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                AspectRatio(
-                  aspectRatio: 3 / 4,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB3E5FC),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: _showCamera
-                        ? (_cameraController != null &&
-                        _cameraController!.value.isInitialized
-                        ? ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        clipBehavior: Clip.hardEdge,
-                        child: SizedBox(
-                          width: _cameraController!.value.previewSize!.height,
-                          height: _cameraController!.value.previewSize!.width,
-                          child: CameraPreview(_cameraController!),
-                        ),
-                      ),
-                    )
-                        : const Center(child: CircularProgressIndicator()))
-                        : Stack(
-                      children: [
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Твоя очередь, включишь камеру?',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueAccent,
+                        SizedBox(
+                          width: 34,
+                          height: 34,
+                          child: Material(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: const BorderSide(
+                                color: Color(0xFFF5F5F5),
+                                width: 1,
+                              ),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: () => Navigator.pop(context),
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/exercise/arrow_left.png',
+                                  width: 18,
+                                  height: 18,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              Image.asset(
-                                'assets/image/video1.png',
-                                width: 160,
-                                height: 160,
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                        Positioned(
-                          bottom: 12,
-                          right: 12,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _isChecked = !_isChecked;
-                              });
-                            },
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                border: _isChecked
-                                    ? Border.all(color: Colors.green, width: 3)
-                                    : null,
-                              ),
-                              child: Icon(
-                                Icons.check,
-                                size: 24,
-                                color: _isChecked ? Colors.green : Colors.grey,
-                              ),
+                        const SizedBox(width: 16),
+                        SizedBox(
+                          width: 243,
+                          height: 34,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2112),
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Container(
+                                    color: const Color(0xFFF2F2F2),
+                                  ),
+                                ),
+                                Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: FractionallySizedBox(
+                                      widthFactor:
+                                      progress == 0 ? 0.01 : progress,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: _green,
+                                          borderRadius:
+                                          BorderRadius.circular(56),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Center(
+                                  child: Text(
+                                    '$repetitionCount/$_targetReps',
+                                    style: const TextStyle(
+                                      fontFamily: 'SF Pro',
+                                      fontSize: 15,
+                                      height: 18 / 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF191919),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -355,93 +340,228 @@ class _Face4ExercisesState extends State<Face4Exercises> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                if (_isChecked && !_showCamera)
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _showCamera = true;
-                      });
-                      sendInit();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                const SizedBox(
+                  width: 207,
+                  height: 21,
+                  child: Center(
+                    child: Text(
+                      'Моргание',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'SF Pro',
+                        fontSize: 18,
+                        height: 21 / 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                    ),
-                    child: const Text(
-                      'Начать упражнение',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
-                if (_showCamera && !_showCongratsImage)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        FloatingActionButton(
-                          heroTag: "init",
-                          backgroundColor: Colors.green,
-                          onPressed: () {
-                            sendInit();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Калибровка выполнена."),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          child: const Text("👁️", style: TextStyle(fontSize: 24)),
-                        ),
-                        FloatingActionButton(
-                          heroTag: "start",
-                          backgroundColor: Colors.orange,
-                          onPressed: () {
-                            startTracking();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Начали!"),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          child: const Icon(Icons.play_arrow),
-                        ),
-                        FloatingActionButton(
-                          heroTag: "stop",
-                          backgroundColor: Colors.red,
-                          onPressed: () {
-                            setState(() {
-                              isTracking = false;
-                            });
-                          },
-                          child: const Icon(Icons.stop),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 12),
+                ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _videoArea() {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: _bg,
+          borderRadius: BorderRadius.zero,
+        ),
+        child: _showCamera
+            ? (_cameraController != null && _cameraController!.value.isInitialized
+            ? FittedBox(
+          fit: BoxFit.cover,
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox(
+            width: _cameraController!.value.previewSize!.height,
+            height: _cameraController!.value.previewSize!.width,
+            child: CameraPreview(_cameraController!),
+          ),
+        )
+            : const Center(child: CircularProgressIndicator()))
+            : Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Твоя очередь, включишь камеру?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: _green,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Image.asset(
+                'assets/newimage/frog1.png',
+                width: 200,
+                height: 262,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _enableCameraButton() {
+    return SizedBox(
+      width: 247,
+      height: 37,
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            _showCamera = true;
+          });
+          sendInit();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _green,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(32),
+          ),
+          elevation: 0,
+        ),
+        child: const Text(
+          'Включить камеру',
+          style: TextStyle(
+            fontFamily: 'SF Pro',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            height: 21 / 18,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _greenIconButton({
+    required String assetPath,
+    required double iconSize,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: 70,
+      height: 70,
+      child: Material(
+        color: _green,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Center(
+            child: Image.asset(
+              assetPath,
+              width: iconSize,
+              height: iconSize,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _exerciseButtonsBar3(BuildContext context) {
+    if (!_showCamera || _showCongratsImage) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 102,
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _greenIconButton(
+              assetPath: 'assets/exercise/ic_calibrate.png',
+              iconSize: 39,
+              onTap: () {
+                sendInit();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Калибровка выполнена."),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+            _greenIconButton(
+              assetPath: 'assets/exercise/ic_play.png',
+              iconSize: 24,
+              onTap: () {
+                startTracking();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Начали!"),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+            _greenIconButton(
+              assetPath: 'assets/exercise/ic_pause.png',
+              iconSize: 24,
+              onTap: () {
+                setState(() {
+                  isTracking = false;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            _topHeader(context),
+            Positioned.fill(
+              top: _headerHeight,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _videoArea(),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: _showCamera
+                        ? _exerciseButtonsBar3(context)
+                        : _enableCameraButton(),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
             if (_showCongratsImage)
               Container(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/image/exercise_10_xp.png', // добавлен баннер
-                      width: 280,
-                    ),
                     const SizedBox(height: 20),
                     Image.asset(
-                      'assets/image/happy.png',
+                      'assets/newimage/happy.png',
                       width: 200,
-                      height: 200,
+                      height: 219,
                     ),
                     const SizedBox(height: 20),
                     const Text(
@@ -456,17 +576,6 @@ class _Face4ExercisesState extends State<Face4Exercises> {
                   ],
                 ),
               ),
-
-            Positioned(
-              top: 30,
-              left: 8,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
           ],
         ),
       ),

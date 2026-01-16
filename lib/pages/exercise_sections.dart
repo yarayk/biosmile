@@ -56,6 +56,10 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
   static const double _mapW = 522.0;
   static const double _mapH = 1353.0;
 
+  // --- Keys for "last opened section"
+  static const String _kLastSectionTitle = 'last_section_title';
+  static const String _kLastSectionRoute = 'last_section_route';
+
   // Острова из CSS (внутри контейнера 375)
   final List<_Island> islands = const [
     _Island(
@@ -68,7 +72,7 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
       h: 254.5,
     ),
     _Island(
-      title: 'Упражнения для мимических мышц',
+      title: 'Упражнения для мимики',
       asset: 'assets/exercise/island_face.png',
       route: '/face_exercises',
       x: 32,
@@ -77,7 +81,7 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
       h: 216,
     ),
     _Island(
-      title: 'Упражнения для нижней челюсти',
+      title: 'Упражнения для челюсти',
       asset: 'assets/exercise/island_jaw.png',
       route: '/jaw_exercises',
       x: 73,
@@ -120,14 +124,14 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
 
   int selectedTabIndex = 1;
 
-  final List<String> routes = [
+  final List<String> routes = const [
     '/home',
     '/exercise_sections',
     '/photo_diary',
     '/profile_first',
   ];
 
-  List<int> iconStates01 = [0, 1, 0, 0];
+  final List<int> iconStates01 = [0, 1, 0, 0];
 
   @override
   void initState() {
@@ -137,6 +141,8 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
 
   Future<void> _loadStates() async {
     final List? states = await ProfileService().getStates();
+    if (!mounted) return;
+
     setState(() {
       userCoins = (states?[0] ?? 0) as int;
       userXp = (states?[1] ?? 0) as int;
@@ -153,14 +159,23 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
     }
   }
 
+  Future<void> _saveLastSection({
+    required String title,
+    required String route,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLastSectionTitle, title);
+    await prefs.setString(_kLastSectionRoute, route);
+  }
+
   void _onTabSelected(int index) {
-    setState(() {
-      selectedTabIndex = index;
-    });
+    setState(() => selectedTabIndex = index);
 
     final currentRoute = ModalRoute.of(context)?.settings.name;
-    if (currentRoute != routes[index]) {
-      Navigator.of(context).pushNamed(routes[index]);
+    final targetRoute = routes[index];
+
+    if (currentRoute != targetRoute) {
+      Navigator.of(context).pushNamed(targetRoute);
     }
   }
 
@@ -185,6 +200,7 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
               child: Image.asset(
                 mapRoadAsset,
                 fit: BoxFit.fill,
+                filterQuality: FilterQuality.high,
               ),
             ),
             for (final island in islands)
@@ -196,13 +212,22 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () async {
+                    // 1) отметили как открытый (твой текущий функционал)
                     await _saveOpenedSection(island.title);
+
+                    // 2) сохранили "последний открытый раздел"
+                    await _saveLastSection(
+                      title: island.title,
+                      route: island.route,
+                    );
+
                     if (!mounted) return;
                     Navigator.pushNamed(context, island.route);
                   },
                   child: Image.asset(
                     island.asset,
                     fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
                   ),
                 ),
               ),
@@ -214,8 +239,6 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Пока фиксируем 200 (как на макете 150/200).
-    // Если есть формула/таблица — сюда подставишь.
     const int nextXp = 200;
 
     return Scaffold(
@@ -225,16 +248,12 @@ class _ExerciseSectionsPageState extends State<ExerciseSectionsPage> {
         child: Column(
           children: [
             const SizedBox(height: 0),
-
-            // Новый статусбар, строго edge-to-edge (без горизонтальных паддингов)
             ExerciseTopBar(
               coins: userCoins,
               currentXp: userXp,
               nextXp: nextXp,
             ),
-
             const SizedBox(height: 12),
-
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),

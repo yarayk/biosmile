@@ -5,6 +5,7 @@
 
 
     <application
+        android:usesCleartextTraffic="true"
         android:label="Smile Quest"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
