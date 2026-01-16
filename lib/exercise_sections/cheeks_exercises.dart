@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled2/widget/tabbar.dart';
 
 class _ExerciseNode {
@@ -91,7 +92,6 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
   static const double _startBtnRadius = 64.0;
 
   // ===== Assets =====
-  // фон: как было fon2.png, но +2
   static const String roadBgAsset = 'assets/exercise/fon2_2.png';
 
   static const String buttonAsset = 'assets/exercise/exercise_btn.png';
@@ -102,6 +102,18 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
   static const String coinAsset = 'assets/newimage/coin_20.png';
 
   static const String selectedBgAsset = 'assets/exercise/fon_buttom.png';
+
+  // ===== "Last task" keys =====
+  static const String _kLastSectionTitle = 'last_section_title';
+  static const String _kLastSectionRoute = 'last_section_route';
+
+  static const String _kLastExerciseNumber = 'last_exercise_number';
+  static const String _kLastExerciseTitle = 'last_exercise_title';
+  static const String _kLastExerciseRoute = 'last_exercise_route';
+
+  // ===== Current section identity =====
+  static const String _sectionTitle = 'Упражнения для щек';
+  static const String _sectionRoute = '/cheeks_exercises';
 
   // ===== Exercises meta =====
   static const List<_ExerciseMeta> exercises = [
@@ -121,7 +133,7 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
     _ExerciseNode(number: 5, route: '/cheeks_5', x: 233, y: 490),
   ];
 
-  // ==== Tabbar (как на островах) ====
+  // ==== Tabbar ====
   int selectedTabIndex = 1;
 
   final List<String> routes = const [
@@ -144,7 +156,7 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
     }
   }
 
-  // ===== Selected exercise & highlight =====
+  // ===== Selected exercise =====
   _ExerciseMeta? selectedExercise;
   int? selectedNumber;
 
@@ -164,9 +176,27 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
     });
   }
 
-  void _onStartPressed() {
+  Future<void> _saveLastSection() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLastSectionTitle, _sectionTitle);
+    await prefs.setString(_kLastSectionRoute, _sectionRoute);
+  }
+
+  Future<void> _saveLastExercise(_ExerciseMeta ex) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kLastExerciseNumber, ex.number);
+    await prefs.setString(_kLastExerciseTitle, ex.title);
+    await prefs.setString(_kLastExerciseRoute, ex.route);
+  }
+
+  Future<void> _onStartPressed() async {
     final ex = selectedExercise;
     if (ex == null) return;
+
+    await _saveLastSection();
+    await _saveLastExercise(ex);
+
+    if (!mounted) return;
 
     setState(() {
       selectedNumber = null;
@@ -224,6 +254,7 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
                         width: _arrowSize * scale,
                         height: _arrowSize * scale,
                         fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
                       ),
                     ),
                   ),
@@ -255,7 +286,7 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
     );
   }
 
-  // ===== Map scene (фон + выделение + кружки) =====
+  // ===== Map scene =====
   Widget _buildScrollableScene(double screenW) {
     final scale = _scaleFor(screenW);
     final canvasH = (_designH - _bottomCrop).clamp(0.0, double.infinity) * scale;
@@ -346,7 +377,7 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
     );
   }
 
-  // ===== Bottom panel widgets =====
+  // ===== Bottom panel =====
   Widget _buildInfoPill({
     required double scale,
     required Widget icon,
@@ -535,7 +566,6 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
     return Scaffold(
       extendBody: true,
       backgroundColor: const Color(0xFFFB9C61),
-
       body: SafeArea(
         top: false,
         bottom: false,
@@ -560,7 +590,6 @@ class _CheeksExercisesPageState extends State<CheeksExercisesPage> {
           },
         ),
       ),
-
       bottomNavigationBar: LayoutBuilder(
         builder: (context, constraints) {
           final screenW = constraints.maxWidth;

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled2/widget/tabbar.dart';
 
 class _ExerciseNode {
@@ -102,6 +103,18 @@ class _AdditionalExercisesPageState extends State<AdditionalExercisesPage> {
 
   static const String selectedBgAsset = 'assets/exercise/fon_buttom.png';
 
+  // ===== "Last task" keys =====
+  static const String _kLastSectionTitle = 'last_section_title';
+  static const String _kLastSectionRoute = 'last_section_route';
+
+  static const String _kLastExerciseNumber = 'last_exercise_number';
+  static const String _kLastExerciseTitle = 'last_exercise_title';
+  static const String _kLastExerciseRoute = 'last_exercise_route';
+
+  // ===== Current section identity =====
+  static const String _sectionTitle = 'дополнительные упражнения';
+  static const String _sectionRoute = '/additional_exercises';
+
   // ===== Exercises meta =====
   static const List<_ExerciseMeta> exercises = [
     _ExerciseMeta(number: 1, title: 'Поцокать, как лошадка', route: '/additional_1'),
@@ -161,9 +174,27 @@ class _AdditionalExercisesPageState extends State<AdditionalExercisesPage> {
     });
   }
 
-  void _onStartPressed() {
+  Future<void> _saveLastSection() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLastSectionTitle, _sectionTitle);
+    await prefs.setString(_kLastSectionRoute, _sectionRoute);
+  }
+
+  Future<void> _saveLastExercise(_ExerciseMeta ex) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kLastExerciseNumber, ex.number);
+    await prefs.setString(_kLastExerciseTitle, ex.title);
+    await prefs.setString(_kLastExerciseRoute, ex.route);
+  }
+
+  Future<void> _onStartPressed() async {
     final ex = selectedExercise;
     if (ex == null) return;
+
+    await _saveLastSection();
+    await _saveLastExercise(ex);
+
+    if (!mounted) return;
 
     setState(() {
       selectedNumber = null;
@@ -221,6 +252,7 @@ class _AdditionalExercisesPageState extends State<AdditionalExercisesPage> {
                         width: _arrowSize * scale,
                         height: _arrowSize * scale,
                         fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
                       ),
                     ),
                   ),
@@ -454,19 +486,37 @@ class _AdditionalExercisesPageState extends State<AdditionalExercisesPage> {
                     children: [
                       _buildInfoPill(
                         scale: scale,
-                        icon: Image.asset(timeAsset, width: 32 * scale, height: 32 * scale, fit: BoxFit.contain),
+                        icon: Image.asset(
+                          timeAsset,
+                          width: 32 * scale,
+                          height: 32 * scale,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
                         text: '3 мин.',
                       ),
                       SizedBox(width: 37 * scale),
                       _buildInfoPill(
                         scale: scale,
-                        icon: Image.asset(starAsset, width: 32 * scale, height: 32 * scale, fit: BoxFit.contain),
+                        icon: Image.asset(
+                          starAsset,
+                          width: 32 * scale,
+                          height: 32 * scale,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
                         text: '+25 ед.',
                       ),
                       SizedBox(width: 37 * scale),
                       _buildInfoPill(
                         scale: scale,
-                        icon: Image.asset(coinAsset, width: 33 * scale, height: 32 * scale, fit: BoxFit.contain),
+                        icon: Image.asset(
+                          coinAsset,
+                          width: 33 * scale,
+                          height: 32 * scale,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
                         text: '+20',
                       ),
                     ],
@@ -486,6 +536,10 @@ class _AdditionalExercisesPageState extends State<AdditionalExercisesPage> {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(_startBtnRadius * scale),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12 * scale,
+                    vertical: 16 * scale,
                   ),
                 ),
                 child: Text(
@@ -520,7 +574,6 @@ class _AdditionalExercisesPageState extends State<AdditionalExercisesPage> {
             return Stack(
               children: [
                 SingleChildScrollView(
-                  // ВАЖНО: всегда даёт скролл, даже когда всё влазит
                   physics: const AlwaysScrollableScrollPhysics(
                     parent: BouncingScrollPhysics(),
                   ),

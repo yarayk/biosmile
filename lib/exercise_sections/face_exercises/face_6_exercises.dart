@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math' as math;
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
@@ -18,37 +19,46 @@ class Face6Exercises extends StatefulWidget {
 
 class _Face6ExercisesState extends State<Face6Exercises> {
   bool _showCamera = false;
-  bool _isChecked = false;
+  bool _isChecked = false; // оставлено как в исходнике (в новом UI не используется)
+
   DateTime? releaseSince;
   DateTime? lastCountAt;
   final int refractoryMs = 200; // защита от двойного счёта на одном пике
+
   CameraController? _cameraController;
   late WebSocketChannel channel;
   Timer? _throttleTimer;
-  String serverJsonOutput = '';
 
+  String serverJsonOutput = '';
   Map<String, dynamic>? result;
+
   bool isTracking = false;
   bool isBaselineSet = false;
 
-  double latestScore = 0.0;   // сырая (0..1)
-  double? smoothedS;          // EMA
-  double maxScore = 0.0;      // наблюдаемый максимум (по сглаженному)
+  double latestScore = 0.0; // сырая (0..1)
+  double? smoothedS; // EMA
+  double maxScore = 0.0; // наблюдаемый максимум (по сглаженному)
 
   // Состояния цикла: open -> strong -> open
   bool wasOpenLongEnough = false; // “готовность” после фазы open
-  bool armed = false;             // разрешён ли зачёт
+  bool armed = false; // разрешён ли зачёт
   DateTime? openSince;
 
   // Параметры
-  final double openThreshold = 0.1;  // <= считаем глаза “открыты”
-  int restOpenMs = 200;               // сколько держать open перед новой попыткой
+  final double openThreshold = 0.1; // <= считаем глаза “открыты”
+  int restOpenMs = 200; // сколько держать open перед новой попыткой
 
   double fracOfMax = 0.40;
   double baseMinThreshold = 0.20;
 
   int repetitionCount = 0;
   bool _showCongratsImage = false;
+
+  static const int _targetReps = 10;
+  static const double _headerHeight = 118;
+
+  static const Color _bg = Color(0xFFF9F9F9);
+  static const Color _green = Color(0xFF81C784);
 
   @override
   void initState() {
@@ -74,6 +84,8 @@ class _Face6ExercisesState extends State<Face6Exercises> {
     channel.stream.listen((message) {
       final decoded = json.decode(message);
 
+      if (!mounted) return;
+
       setState(() {
         result = decoded;
         serverJsonOutput = const JsonEncoder.withIndent('  ').convert(decoded);
@@ -81,7 +93,7 @@ class _Face6ExercisesState extends State<Face6Exercises> {
 
       final status = decoded["status"];
       if (status == "baseline_set") {
-        // Разрешим первый повтор сразу после калибровки
+        // Разрешим первый повтор сразу после калибровки (как в исходнике)
         setState(() {
           isBaselineSet = true;
           wasOpenLongEnough = true;
@@ -98,6 +110,7 @@ class _Face6ExercisesState extends State<Face6Exercises> {
       if (status == "tracking" && decoded["delta"] != null) {
         final delta = decoded["delta"] as Map<String, dynamic>;
         double s = 0.0;
+
         if (delta["relative_change"] is num) {
           s = (delta["relative_change"] as num).toDouble(); // уже 0..1
         } else if (delta["relative_change"] is num) {
@@ -122,7 +135,7 @@ class _Face6ExercisesState extends State<Face6Exercises> {
 
         final now = DateTime.now();
 
-// Реарм по release-порогу (а не по абсолютному openThreshold)
+        // Реарм по release-порогу (а не по абсолютному openThreshold)
         final isBelowRelease = val <= releaseThreshold;
         if (isBelowRelease) {
           releaseSince ??= now;
@@ -135,9 +148,15 @@ class _Face6ExercisesState extends State<Face6Exercises> {
         }
         final isOpenNow = val <= openThreshold; // оставим только для логов
 
-// Активация + рефрактерный интервал
-        final canCountAgain = lastCountAt == null || now.difference(lastCountAt!).inMilliseconds >= refractoryMs;
-        if (isBaselineSet && wasOpenLongEnough && armed && val >= activationThreshold && canCountAgain) {
+        // Активация + рефрактерный интервал
+        final canCountAgain = lastCountAt == null ||
+            now.difference(lastCountAt!).inMilliseconds >= refractoryMs;
+
+        if (isBaselineSet &&
+            wasOpenLongEnough &&
+            armed &&
+            val >= activationThreshold &&
+            canCountAgain) {
           setState(() {
             repetitionCount++;
             wasOpenLongEnough = false;
@@ -148,14 +167,17 @@ class _Face6ExercisesState extends State<Face6Exercises> {
           releaseSince = null; // новый цикл потребует падения ниже releaseThreshold
 
           if (repetitionCount >= 10) {
-            setState(() { _showCongratsImage = true; isTracking = false; });
+            setState(() {
+              _showCongratsImage = true;
+              isTracking = false;
+            });
             Future.delayed(const Duration(seconds: 5), () {
               if (mounted) Navigator.of(context).pushReplacementNamed('/home');
             });
           }
         }
 
-        // Отладка
+        // Отладка (как в исходнике)
         debugPrint('s=${val.toStringAsFixed(3)} thr=${activationThreshold.toStringAsFixed(3)} '
             'open=$isOpenNow ready=$wasOpenLongEnough armed=$armed');
       }
@@ -190,8 +212,13 @@ class _Face6ExercisesState extends State<Face6Exercises> {
         buffer[i * 3 + 2] = y;
       }
 
-      return img.Image.fromBytes(width: width, height: height, bytes: buffer.buffer, numChannels: 3);
-    } catch (e) {
+      return img.Image.fromBytes(
+        width: width,
+        height: height,
+        bytes: buffer.buffer,
+        numChannels: 3,
+      );
+    } catch (_) {
       return null;
     }
   }
@@ -206,7 +233,6 @@ class _Face6ExercisesState extends State<Face6Exercises> {
     channel.sink.add(data);
   }
 
-
   void startTracking() {
     if (!isBaselineSet) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -219,7 +245,7 @@ class _Face6ExercisesState extends State<Face6Exercises> {
       repetitionCount = 0;
       _showCongratsImage = false;
 
-      // Сброс состояния
+      // Сброс состояния (как в исходнике)
       wasOpenLongEnough = true; // разрешим первый зачёт сразу после init
       armed = true;
       openSince = null;
@@ -241,141 +267,100 @@ class _Face6ExercisesState extends State<Face6Exercises> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Фон
-            Positioned.fill(
-              child: Image.asset(
-                'assets/image/fon8.png',
-                fit: BoxFit.cover,
-              ),
-            ),
+  // ---------- UI (тот же дизайн) ----------
 
-            // Основное содержимое
-            Column(
+  Widget _topHeader(BuildContext context) {
+    final progress = (repetitionCount.clamp(0, _targetReps)) / _targetReps.toDouble();
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      height: _headerHeight,
+      child: SafeArea(
+        bottom: false,
+        child: SizedBox(
+          height: _headerHeight,
+          child: Center(
+            child: Wrap(
+              direction: Axis.horizontal,
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.end,
+              runAlignment: WrapAlignment.center,
+              spacing: 16,
+              runSpacing: 18,
               children: [
-                const SizedBox(height: 8),
-                const Text(
-                  'Упражнения для мимических мышц',
-                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w400),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text.rich(
-                    TextSpan(
+                SizedBox(
+                  width: 343,
+                  height: 34,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const TextSpan(text: 'Инструкция ', style: TextStyle(color: Colors.purple)),
-                        TextSpan(
-                          text: 'Выполнение',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
-                            decoration: TextDecoration.underline,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Прищурься',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 40),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 3),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green, width: 2),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$repetitionCount / 10',
-                      style: const TextStyle(
-                          color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                AspectRatio(
-                  aspectRatio: 3 / 4,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB3E5FC),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: _showCamera
-                        ? (_cameraController != null &&
-                        _cameraController!.value.isInitialized
-                        ? ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        clipBehavior: Clip.hardEdge,
-                        child: SizedBox(
-                          width: _cameraController!.value.previewSize!.height,
-                          height: _cameraController!.value.previewSize!.width,
-                          child: CameraPreview(_cameraController!),
-                        ),
-                      ),
-                    )
-                        : const Center(child: CircularProgressIndicator()))
-                        : Stack(
-                      children: [
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Твоя очередь, включишь камеру?',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueAccent,
+                        SizedBox(
+                          width: 34,
+                          height: 34,
+                          child: Material(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: const BorderSide(
+                                color: Color(0xFFF5F5F5),
+                                width: 1,
+                              ),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: () => Navigator.pop(context),
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/exercise/arrow_left.png',
+                                  width: 18,
+                                  height: 18,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              Image.asset(
-                                'assets/image/video1.png',
-                                width: 160,
-                                height: 160,
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                        Positioned(
-                          bottom: 12,
-                          right: 12,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _isChecked = !_isChecked;
-                              });
-                            },
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                border: _isChecked
-                                    ? Border.all(color: Colors.green, width: 3)
-                                    : null,
-                              ),
-                              child: Icon(
-                                Icons.check,
-                                size: 24,
-                                color: _isChecked ? Colors.green : Colors.grey,
-                              ),
+                        const SizedBox(width: 16),
+                        SizedBox(
+                          width: 243,
+                          height: 34,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2112),
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Container(color: const Color(0xFFF2F2F2)),
+                                ),
+                                Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: FractionallySizedBox(
+                                      widthFactor: progress == 0 ? 0.01 : progress,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: _green,
+                                          borderRadius: BorderRadius.circular(56),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Center(
+                                  child: Text(
+                                    '$repetitionCount/$_targetReps',
+                                    style: const TextStyle(
+                                      fontFamily: 'SF Pro',
+                                      fontSize: 15,
+                                      height: 18 / 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF191919),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -383,92 +368,227 @@ class _Face6ExercisesState extends State<Face6Exercises> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                if (_isChecked && !_showCamera)
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _showCamera = true;
-                      });
-                      sendInit();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                const SizedBox(
+                  width: 207,
+                  height: 21,
+                  child: Center(
+                    child: Text(
+                      'Прищур',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'SF Pro',
+                        fontSize: 18,
+                        height: 21 / 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                    ),
-                    child: const Text(
-                      'Начать упражнение',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
-                if (_showCamera && !_showCongratsImage)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        FloatingActionButton(
-                          heroTag: "init",
-                          backgroundColor: Colors.green,
-                          onPressed: () {
-                            sendInit();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Калибровка выполнена."),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          child: const Text("👁️", style: TextStyle(fontSize: 24)),
-                        ),
-                        FloatingActionButton(
-                          heroTag: "start",
-                          backgroundColor: Colors.orange,
-                          onPressed: () {
-                            startTracking();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Начали!"),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          child: const Icon(Icons.play_arrow),
-                        ),
-                        FloatingActionButton(
-                          heroTag: "stop",
-                          backgroundColor: Colors.red,
-                          onPressed: () async {
-                            setState(() => isTracking = false);
-                            await _cameraController?.stopImageStream();
-                          },
-                          child: const Icon(Icons.stop),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 12),
+                ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _videoArea() {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: _bg,
+          borderRadius: BorderRadius.zero,
+        ),
+        child: _showCamera
+            ? (_cameraController != null && _cameraController!.value.isInitialized
+            ? FittedBox(
+          fit: BoxFit.cover,
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox(
+            width: _cameraController!.value.previewSize!.height,
+            height: _cameraController!.value.previewSize!.width,
+            child: CameraPreview(_cameraController!),
+          ),
+        )
+            : const Center(child: CircularProgressIndicator()))
+            : Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Твоя очередь, включишь камеру?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: _green,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Image.asset(
+                'assets/newimage/frog1.png',
+                width: 200,
+                height: 262,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _enableCameraButton() {
+    return SizedBox(
+      width: 247,
+      height: 37,
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            _showCamera = true;
+          });
+          sendInit();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _green,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(32),
+          ),
+          elevation: 0,
+        ),
+        child: const Text(
+          'Включить камеру',
+          style: TextStyle(
+            fontFamily: 'SF Pro',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            height: 21 / 18,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _greenIconButton({
+    required String assetPath,
+    required double iconSize,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: 70,
+      height: 70,
+      child: Material(
+        color: _green,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Center(
+            child: Image.asset(
+              assetPath,
+              width: iconSize,
+              height: iconSize,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _exerciseButtonsBar3(BuildContext context) {
+    if (!_showCamera || _showCongratsImage) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 102,
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _greenIconButton(
+              assetPath: 'assets/exercise/ic_calibrate.png',
+              iconSize: 39,
+              onTap: () {
+                sendInit();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Калибровка выполнена."),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+            _greenIconButton(
+              assetPath: 'assets/exercise/ic_play.png',
+              iconSize: 24,
+              onTap: () {
+                startTracking();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Начали!"),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+            _greenIconButton(
+              assetPath: 'assets/exercise/ic_pause.png',
+              iconSize: 24,
+              onTap: () async {
+                setState(() => isTracking = false);
+                await _cameraController?.stopImageStream();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            _topHeader(context),
+            Positioned.fill(
+              top: _headerHeight,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _videoArea(),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: _showCamera
+                        ? _exerciseButtonsBar3(context)
+                        : _enableCameraButton(),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
             if (_showCongratsImage)
               Container(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/image/exercise_10_xp.png', // добавлен баннер
-                      width: 280,
-                    ),
                     const SizedBox(height: 20),
                     Image.asset(
-                      'assets/image/happy.png',
+                      'assets/newimage/happy.png',
                       width: 200,
-                      height: 200,
+                      height: 219,
                     ),
                     const SizedBox(height: 20),
                     const Text(
@@ -483,17 +603,6 @@ class _Face6ExercisesState extends State<Face6Exercises> {
                   ],
                 ),
               ),
-
-            Positioned(
-              top: 30,
-              left: 8,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
           ],
         ),
       ),
