@@ -1,4 +1,3 @@
-// Импорты
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -36,12 +35,12 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
       'Поочередно закрывать правый и левый глаз',
       'Сморщить нос',
       'Раздувать ноздри, шевелить носом. Втягивать ноздри',
-      'Звук “М”',
-      'Звук “О”',
+      'Звук "М"',
+      'Звук "О"',
       'Плевать',
-      'Звуки “У”, “А”',
-      'Рот открыт, звуки “О”, “А”',
-      'Произносить “Т”, “П”, “Р”, “У”',
+      'Звуки "У", "А"',
+      'Рот открыт, звуки "О", "А"',
+      'Произносить "Т", "П", "Р", "У"',
     ],
     'Упражнения для щек': [
       'Надуть обе щеки',
@@ -57,7 +56,7 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
     ],
     'Упражнения для губ': [
       'Вытянуть губы вперед - трубочкой',
-      'Движения “трубочкой”',
+      'Движения "трубочкой"',
       'Трубочка-улыбочка поочередно',
       'Улыбка',
       'Длинное задание',
@@ -143,26 +142,12 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
     }
 
     try {
-      final url = await PhotoUploadService.uploadPhoto(
+      await PhotoUploadService.uploadPhoto(
         context,
         _correctedImageBytes!,
         selectedSection!,
         selectedExercise!,
       );
-
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-
-      if (userId == null) {
-        throw Exception('Пользователь не авторизован');
-      }
-
-      await Supabase.instance.client.from('users_photos').insert({
-        'user_id': userId,
-        'image_url': url,
-        'section': selectedSection,
-        'exercise': selectedExercise,
-        'date_taken': DateTime.now().toIso8601String(),
-      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Фото успешно сохранено')),
@@ -174,7 +159,6 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
       );
     }
   }
-
 
   void showSectionBottomSheet() {
     showModalBottomSheet(
@@ -460,5 +444,4 @@ class _CameraExerciseScreenState extends State<CameraExerciseScreen> {
       ),
     );
   }
-
 }
